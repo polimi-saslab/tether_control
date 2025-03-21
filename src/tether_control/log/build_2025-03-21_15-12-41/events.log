@@ -1,0 +1,265 @@
+[0.000000] (-) TimerEvent: {}
+[0.000571] (tether_control) JobQueued: {'identifier': 'tether_control', 'dependencies': OrderedDict()}
+[0.000603] (tether_control) JobStarted: {'identifier': 'tether_control'}
+[0.009202] (tether_control) JobProgress: {'identifier': 'tether_control', 'progress': 'cmake'}
+[0.009806] (tether_control) Command: {'cmd': ['/usr/bin/cmake', '/home/yannis/tether_control_ws/src/tether_control', '-DCMAKE_INSTALL_PREFIX=/home/yannis/tether_control_ws/src/tether_control/install/tether_control'], 'cwd': '/home/yannis/tether_control_ws/src/tether_control/build/tether_control', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('HISTFILESIZE', '2147450879'), ('USER', 'yannis'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/yannis/snap/code/common/.cache/gio-modules'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/snap/code/184/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/yannis/Sas_lab/PX4-repos/install/px4_ros_com/lib:/home/yannis/Sas_lab/PX4-repos/install/px4_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/yannis'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('OLDPWD', '/home/yannis/tether_control_ws/src/tether_control/build'), ('TERM_PROGRAM_VERSION', '1.97.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/184/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/yannis/snap/code/common/.cache/immodules/immodules.cache'), ('GIO_LAUNCHED_DESKTOP_FILE', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('PAGER', 'less'), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/184/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/184/usr/share/code/code'), ('MANAGERPID', '1723'), ('SYSTEMD_EXEC_PID', '1895'), ('IM_CONFIG_CHECK_ENV', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '2690'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/yannis/Sas_lab/PX4-repos/install:/home/yannis/groundstation/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'yannis'), ('OSH', '/home/yannis/.oh-my-bash'), ('JOURNAL_STREAM', '8:12996'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'yannis'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/yannis/.local/bin:/opt/ros/humble/bin:/home/yannis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/yannis/.config/Code/User/globalStorage/github.copilot-chat/debugCommand'), ('SESSION_MANAGER', 'local/Firefly:@/tmp/.ICE-unix/1866,unix/Firefly:/tmp/.ICE-unix/1866'), ('GTK_EXE_PREFIX', '/snap/code/184/usr'), ('INVOCATION_ID', '8af5aad2bf9b4a3f898f272b668fa973'), ('XDG_MENU_PREFIX', 'gnome-'), ('BAMF_DESKTOP_FILE_HINT', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/184/usr/lib/locale'), ('HISTSIZE', '2147450879'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/yannis/snap/code/184/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.MT0C32'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-cd0720e283.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/yannis/snap/code/184/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/home/yannis/Sas_lab/PX4-repos/install/px4_ros_com:/home/yannis/Sas_lab/PX4-repos/install/px4_msgs:/home/yannis/groundstation/install/groundstation:/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/yannis/tether_control_ws/src/tether_control/build/tether_control'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/yannis/snap/code/184/.local/share:/home/yannis/snap/code/184:/snap/code/184/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/yannis/Sas_lab/PX4-repos/install/px4_ros_com/local/lib/python3.10/dist-packages:/home/yannis/Sas_lab/PX4-repos/install/px4_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/yannis/Sas_lab/PX4-repos/install/px4_ros_com:/home/yannis/Sas_lab/PX4-repos/install/px4_msgs:/home/yannis/groundstation/install/groundstation:/opt/ros/humble')]), 'shell': False}
+[0.076036] (tether_control) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.099647] (-) TimerEvent: {}
+[0.140831] (tether_control) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.148080] (tether_control) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.199753] (-) TimerEvent: {}
+[0.219808] (tether_control) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.231377] (tether_control) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.231591] (tether_control) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.232016] (tether_control) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.237128] (tether_control) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.299865] (-) TimerEvent: {}
+[0.321636] (tether_control) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.332739] (tether_control) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.332994] (tether_control) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.334225] (tether_control) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.345544] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-plugin1 -- found version 1.4.0\n'}
+[0.345893] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-plugin1\n'}
+[0.346326] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-plugin1> component [register]\n'}
+[0.348352] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-plugin1-register -- found version 1.4.0\n'}
+[0.348799] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-plugin1-register\n'}
+[0.351349] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-gazebo6 -- found version 6.17.0\n'}
+[0.351743] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-gazebo6\n'}
+[0.353717] (tether_control) StdoutLine: {'line': b'-- Looking for sdformat12 -- found version 12.8.0\n'}
+[0.354125] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of sdformat12\n'}
+[0.359072] (tether_control) StdoutLine: {'line': b"-- Checking for module 'tinyxml2'\n"}
+[0.369827] (tether_control) StdoutLine: {'line': b'--   Found tinyxml2, version 9.0.0\n'}
+[0.399950] (-) TimerEvent: {}
+[0.400960] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[0.401402] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-math6\n'}
+[0.403933] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-utils1 -- found version 1.5.1\n'}
+[0.404355] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-utils1\n'}
+[0.405671] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-plugin1 -- found version 1.4.0\n'}
+[0.406229] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-plugin1\n'}
+[0.406413] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-plugin1> component [loader]\n'}
+[0.410306] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-plugin1-loader -- found version 1.4.0\n'}
+[0.410472] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-plugin1-loader\n'}
+[0.410630] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-plugin1> component [register]\n'}
+[0.414460] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-transport11 -- found version 11.4.1\n'}
+[0.415123] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-transport11\n'}
+[0.500054] (-) TimerEvent: {}
+[0.600351] (-) TimerEvent: {}
+[0.611395] (tether_control) StdoutLine: {'line': b'-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") \n'}
+[0.629397] (tether_control) StdoutLine: {'line': b'-- Config-file not installed for ZeroMQ -- checking for pkg-config\n'}
+[0.634892] (tether_control) StdoutLine: {'line': b"-- Checking for module 'libzmq >= 4'\n"}
+[0.647957] (tether_control) StdoutLine: {'line': b'--   Found libzmq , version 4.3.4\n'}
+[0.680983] (tether_control) StdoutLine: {'line': b'-- Found ZeroMQ: TRUE (Required is at least version "4") \n'}
+[0.686247] (tether_control) StdoutLine: {'line': b"-- Checking for module 'uuid'\n"}
+[0.697037] (tether_control) StdoutLine: {'line': b'--   Found uuid, version 2.37.2\n'}
+[0.700463] (-) TimerEvent: {}
+[0.733858] (tether_control) StdoutLine: {'line': b'-- Found UUID: TRUE  \n'}
+[0.734539] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-utils1 -- found version 1.5.1\n'}
+[0.735307] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-utils1\n'}
+[0.735618] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-utils1> component [cli]\n'}
+[0.738613] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-utils1-cli -- found version 1.5.1\n'}
+[0.739349] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-utils1-cli\n'}
+[0.742202] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-msgs8 -- found version 8.7.0\n'}
+[0.742748] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-msgs8\n'}
+[0.763423] (tether_control) StdoutLine: {'line': b'-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found suitable version "3.12.4", minimum required is "3") \n'}
+[0.764346] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[0.775962] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-transport11> component [log]\n'}
+[0.778028] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-transport11-log -- found version 11.4.1\n'}
+[0.778581] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-transport11-log\n'}
+[0.779230] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-transport11> component [parameters]\n'}
+[0.781300] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-transport11-parameters -- found version 11.4.1\n'}
+[0.781813] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-transport11-parameters\n'}
+[0.782728] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-msgs8 -- found version 8.7.0\n'}
+[0.784745] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4 -- found version 4.7.0\n'}
+[0.785217] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-common4\n'}
+[0.785495] (tether_control) StdoutLine: {'line': b'-- Looking for dlfcn.h - found\n'}
+[0.786397] (tether_control) StdoutLine: {'line': b'-- Looking for libdl - found\n'}
+[0.787969] (tether_control) StdoutLine: {'line': b'-- Found DL: TRUE  \n'}
+[0.795711] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-common4> component [profiler]\n'}
+[0.797775] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4-profiler -- found version 4.7.0\n'}
+[0.798320] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-common4-profiler\n'}
+[0.798814] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-common4> component [events]\n'}
+[0.800528] (-) TimerEvent: {}
+[0.800895] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4-events -- found version 4.7.0\n'}
+[0.801408] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-common4-events\n'}
+[0.801824] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[0.802352] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-common4> component [av]\n'}
+[0.804364] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4-av -- found version 4.7.0\n'}
+[0.804877] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-common4-av\n'}
+[0.810958] (tether_control) StdoutLine: {'line': b"-- Checking for module 'libswscale'\n"}
+[0.827497] (tether_control) StdoutLine: {'line': b'--   Found libswscale, version 5.9.100\n'}
+[0.874822] (tether_control) StdoutLine: {'line': b'-- Found SWSCALE: TRUE  \n'}
+[0.882602] (tether_control) StdoutLine: {'line': b"-- Checking for module 'libavdevice >= 56.4.100'\n"}
+[0.894866] (tether_control) StdoutLine: {'line': b'--   Found libavdevice , version 58.13.100\n'}
+[0.900611] (-) TimerEvent: {}
+[0.933453] (tether_control) StdoutLine: {'line': b'-- Found AVDEVICE: TRUE (Required is at least version "56.4.100") \n'}
+[0.939687] (tether_control) StdoutLine: {'line': b"-- Checking for module 'libavformat'\n"}
+[0.951538] (tether_control) StdoutLine: {'line': b'--   Found libavformat, version 58.76.100\n'}
+[0.985193] (tether_control) StdoutLine: {'line': b'-- Found AVFORMAT: TRUE  \n'}
+[0.989965] (tether_control) StdoutLine: {'line': b"-- Checking for module 'libavcodec'\n"}
+[1.000714] (-) TimerEvent: {}
+[1.002752] (tether_control) StdoutLine: {'line': b'--   Found libavcodec, version 58.134.100\n'}
+[1.043200] (tether_control) StdoutLine: {'line': b'-- Found AVCODEC: TRUE  \n'}
+[1.047893] (tether_control) StdoutLine: {'line': b"-- Checking for module 'libavutil'\n"}
+[1.058853] (tether_control) StdoutLine: {'line': b'--   Found libavutil, version 56.70.100\n'}
+[1.090472] (tether_control) StdoutLine: {'line': b'-- Found AVUTIL: TRUE  \n'}
+[1.093150] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-fuel_tools7 -- found version 7.3.1\n'}
+[1.093584] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-fuel_tools7\n'}
+[1.100770] (-) TimerEvent: {}
+[1.176346] (tether_control) StdoutLine: {'line': b'-- Found CURL: /usr/lib/x86_64-linux-gnu/libcurl.so (found version "7.81.0")  \n'}
+[1.184122] (tether_control) StdoutLine: {'line': b"-- Checking for module 'jsoncpp'\n"}
+[1.195026] (tether_control) StdoutLine: {'line': b'--   Found jsoncpp, version 1.9.5\n'}
+[1.200857] (-) TimerEvent: {}
+[1.231168] (tether_control) StdoutLine: {'line': b'-- Found JSONCPP: TRUE  \n'}
+[1.239855] (tether_control) StdoutLine: {'line': b"-- Checking for module 'libzip'\n"}
+[1.251268] (tether_control) StdoutLine: {'line': b'--   Found libzip, version 1.7.3\n'}
+[1.282341] (tether_control) StdoutLine: {'line': b'-- Found ZIP: TRUE  \n'}
+[1.282757] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4 -- found version 4.7.0\n'}
+[1.283162] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.283559] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-msgs8 -- found version 8.7.0\n'}
+[1.286260] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-gui6 -- found version 6.8.0\n'}
+[1.286746] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-gui6\n'}
+[1.300918] (-) TimerEvent: {}
+[1.316428] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.317744] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4 -- found version 4.7.0\n'}
+[1.317848] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-plugin1 -- found version 1.4.0\n'}
+[1.318195] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-transport11 -- found version 11.4.1\n'}
+[1.321333] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-rendering6 -- found version 6.6.3\n'}
+[1.321988] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-rendering6\n'}
+[1.322503] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.323198] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-math6\n'}
+[1.323414] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-math6> component [eigen3]\n'}
+[1.326524] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6-eigen3 -- found version 6.15.1\n'}
+[1.327184] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-math6-eigen3\n'}
+[1.337358] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4 -- found version 4.7.0\n'}
+[1.337875] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-common4\n'}
+[1.338053] (tether_control) StdoutLine: {'line': b'-- Looking for dlfcn.h - found\n'}
+[1.338175] (tether_control) StdoutLine: {'line': b'-- Looking for libdl - found\n'}
+[1.348131] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-common4> component [graphics]\n'}
+[1.350166] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4-graphics -- found version 4.7.0\n'}
+[1.350644] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-common4-graphics\n'}
+[1.351025] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.351433] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-utils1 -- found version 1.5.1\n'}
+[1.351964] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-common4> component [events]\n'}
+[1.352790] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-plugin1 -- found version 1.4.0\n'}
+[1.353220] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-plugin1\n'}
+[1.353313] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-plugin1> component [all]\n'}
+[1.355594] (tether_control) StdoutLine: {'line': b'-- Looking for all libraries of ignition-plugin1 -- found version 1.4.0\n'}
+[1.356092] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-plugin1 -- found version 1.4.0\n'}
+[1.358226] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-msgs8 -- found version 8.7.0\n'}
+[1.380549] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-physics5 -- found version 5.3.2\n'}
+[1.380965] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-physics5\n'}
+[1.381310] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.381701] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-plugin1 -- found version 1.4.0\n'}
+[1.382102] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-utils1 -- found version 1.5.1\n'}
+[1.383147] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-physics5> component [heightmap]\n'}
+[1.385141] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-physics5-heightmap -- found version 5.3.2\n'}
+[1.385578] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-physics5-heightmap\n'}
+[1.385936] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4 -- found version 4.7.0\n'}
+[1.386346] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-physics5> component [mesh]\n'}
+[1.388375] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-physics5-mesh -- found version 5.3.2\n'}
+[1.388836] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-physics5-mesh\n'}
+[1.389204] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4 -- found version 4.7.0\n'}
+[1.389627] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-physics5> component [sdf]\n'}
+[1.391827] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-physics5-sdf -- found version 5.3.2\n'}
+[1.392265] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-physics5-sdf\n'}
+[1.392608] (tether_control) StdoutLine: {'line': b'-- Looking for sdformat12 -- found version 12.8.0\n'}
+[1.395103] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6 -- found version 6.8.1\n'}
+[1.395499] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6\n'}
+[1.400980] (-) TimerEvent: {}
+[1.416938] (tether_control) StdoutLine: {'line': b'-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") \n'}
+[1.418395] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.418720] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-common4 -- found version 4.7.0\n'}
+[1.419217] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-transport11 -- found version 11.4.1\n'}
+[1.419987] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-rendering6 -- found version 6.6.3\n'}
+[1.420757] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-msgs8 -- found version 8.7.0\n'}
+[1.421376] (tether_control) StdoutLine: {'line': b'-- Looking for sdformat12 -- found version 12.8.0\n'}
+[1.422238] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [air_pressure]\n'}
+[1.425415] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-air_pressure -- found version 6.8.1\n'}
+[1.426124] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-air_pressure\n'}
+[1.426721] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [altimeter]\n'}
+[1.429117] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-altimeter -- found version 6.8.1\n'}
+[1.429759] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-altimeter\n'}
+[1.430416] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [imu]\n'}
+[1.432694] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-imu -- found version 6.8.1\n'}
+[1.433676] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-imu\n'}
+[1.434316] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [force_torque]\n'}
+[1.437289] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-force_torque -- found version 6.8.1\n'}
+[1.437908] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-force_torque\n'}
+[1.438697] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [logical_camera]\n'}
+[1.441729] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-logical_camera -- found version 6.8.1\n'}
+[1.442211] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-logical_camera\n'}
+[1.442743] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [magnetometer]\n'}
+[1.444813] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-magnetometer -- found version 6.8.1\n'}
+[1.445267] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-magnetometer\n'}
+[1.445728] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [navsat]\n'}
+[1.447711] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-navsat -- found version 6.8.1\n'}
+[1.448277] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-navsat\n'}
+[1.448734] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [rendering]\n'}
+[1.450712] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-rendering -- found version 6.8.1\n'}
+[1.451154] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-rendering\n'}
+[1.451600] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [lidar]\n'}
+[1.453569] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-lidar -- found version 6.8.1\n'}
+[1.454069] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-lidar\n'}
+[1.454472] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6 -- found version 6.8.1\n'}
+[1.455045] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [gpu_lidar]\n'}
+[1.457057] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-gpu_lidar -- found version 6.8.1\n'}
+[1.457501] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-gpu_lidar\n'}
+[1.457865] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6 -- found version 6.8.1\n'}
+[1.458370] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [camera]\n'}
+[1.460379] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-camera -- found version 6.8.1\n'}
+[1.460845] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-camera\n'}
+[1.461222] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6 -- found version 6.8.1\n'}
+[1.461737] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [boundingbox_camera]\n'}
+[1.463682] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-boundingbox_camera -- found version 6.8.1\n'}
+[1.464118] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-boundingbox_camera\n'}
+[1.464586] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [segmentation_camera]\n'}
+[1.466550] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-segmentation_camera -- found version 6.8.1\n'}
+[1.466987] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-segmentation_camera\n'}
+[1.467447] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [depth_camera]\n'}
+[1.470877] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-depth_camera -- found version 6.8.1\n'}
+[1.471474] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-depth_camera\n'}
+[1.472098] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6 -- found version 6.8.1\n'}
+[1.472990] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [rgbd_camera]\n'}
+[1.475299] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-rgbd_camera -- found version 6.8.1\n'}
+[1.475779] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-rgbd_camera\n'}
+[1.476169] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6 -- found version 6.8.1\n'}
+[1.476701] (tether_control) StdoutLine: {'line': b'-- Searching for <ignition-sensors6> component [thermal_camera]\n'}
+[1.478721] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6-thermal_camera -- found version 6.8.1\n'}
+[1.479185] (tether_control) StdoutLine: {'line': b'-- Searching for dependencies of ignition-sensors6-thermal_camera\n'}
+[1.479560] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-sensors6 -- found version 6.8.1\n'}
+[1.480530] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-rendering6 -- found version 6.6.3\n'}
+[1.480958] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-math6 -- found version 6.15.1\n'}
+[1.483164] (tether_control) StdoutLine: {'line': b'-- Looking for ignition-utils1 -- found version 1.5.1\n'}
+[1.501062] (-) TimerEvent: {}
+[1.504515] (tether_control) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[1.601160] (-) TimerEvent: {}
+[1.701408] (-) TimerEvent: {}
+[1.801662] (-) TimerEvent: {}
+[1.901961] (-) TimerEvent: {}
+[1.960819] (tether_control) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[2.002055] (-) TimerEvent: {}
+[2.063838] (tether_control) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.11 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[2.102126] (-) TimerEvent: {}
+[2.163691] (tether_control) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[2.163888] (tether_control) StdoutLine: {'line': b'-- Configured cppcheck include dirs: \n'}
+[2.163977] (tether_control) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[2.165282] (tether_control) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[2.167657] (tether_control) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[2.170224] (tether_control) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257\n"}
+[2.179375] (tether_control) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[2.179514] (tether_control) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[2.180822] (tether_control) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[2.182007] (tether_control) StdoutLine: {'line': b'-- Configuring done\n'}
+[2.191478] (tether_control) StdoutLine: {'line': b'-- Generating done\n'}
+[2.195256] (tether_control) StdoutLine: {'line': b'-- Build files have been written to: /home/yannis/tether_control_ws/src/tether_control/build/tether_control\n'}
+[2.202219] (-) TimerEvent: {}
+[2.205163] (tether_control) CommandEnded: {'returncode': 0}
+[2.205927] (tether_control) JobProgress: {'identifier': 'tether_control', 'progress': 'build'}
+[2.206850] (tether_control) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/yannis/tether_control_ws/src/tether_control/build/tether_control', '--', '-j8', '-l8'], 'cwd': '/home/yannis/tether_control_ws/src/tether_control/build/tether_control', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('HISTFILESIZE', '2147450879'), ('USER', 'yannis'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/yannis/snap/code/common/.cache/gio-modules'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/snap/code/184/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/yannis/Sas_lab/PX4-repos/install/px4_ros_com/lib:/home/yannis/Sas_lab/PX4-repos/install/px4_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/yannis'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('OLDPWD', '/home/yannis/tether_control_ws/src/tether_control/build'), ('TERM_PROGRAM_VERSION', '1.97.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/184/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/yannis/snap/code/common/.cache/immodules/immodules.cache'), ('GIO_LAUNCHED_DESKTOP_FILE', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('PAGER', 'less'), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/184/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/184/usr/share/code/code'), ('MANAGERPID', '1723'), ('SYSTEMD_EXEC_PID', '1895'), ('IM_CONFIG_CHECK_ENV', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '2690'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/yannis/Sas_lab/PX4-repos/install:/home/yannis/groundstation/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'yannis'), ('OSH', '/home/yannis/.oh-my-bash'), ('JOURNAL_STREAM', '8:12996'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'yannis'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/yannis/.local/bin:/opt/ros/humble/bin:/home/yannis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/yannis/.config/Code/User/globalStorage/github.copilot-chat/debugCommand'), ('SESSION_MANAGER', 'local/Firefly:@/tmp/.ICE-unix/1866,unix/Firefly:/tmp/.ICE-unix/1866'), ('GTK_EXE_PREFIX', '/snap/code/184/usr'), ('INVOCATION_ID', '8af5aad2bf9b4a3f898f272b668fa973'), ('XDG_MENU_PREFIX', 'gnome-'), ('BAMF_DESKTOP_FILE_HINT', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/184/usr/lib/locale'), ('HISTSIZE', '2147450879'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/yannis/snap/code/184/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.MT0C32'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-cd0720e283.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/yannis/snap/code/184/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/home/yannis/Sas_lab/PX4-repos/install/px4_ros_com:/home/yannis/Sas_lab/PX4-repos/install/px4_msgs:/home/yannis/groundstation/install/groundstation:/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('GJS_DEBUG_OUTPUT', 'stderr'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/yannis/tether_control_ws/src/tether_control/build/tether_control'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/yannis/snap/code/184/.local/share:/home/yannis/snap/code/184:/snap/code/184/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/yannis/Sas_lab/PX4-repos/install/px4_ros_com/local/lib/python3.10/dist-packages:/home/yannis/Sas_lab/PX4-repos/install/px4_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/yannis/Sas_lab/PX4-repos/install/px4_ros_com:/home/yannis/Sas_lab/PX4-repos/install/px4_msgs:/home/yannis/groundstation/install/groundstation:/opt/ros/humble')]), 'shell': False}
+[2.265999] (tether_control) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/tether_control.dir/CommandActor.cc.o\x1b[0m\n'}
+[2.272937] (tether_control) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/tether_control.dir/build.make:76: CMakeFiles/tether_control.dir/CommandActor.cc.o] Interrupt\n'}
+[2.273211] (tether_control) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:85: CMakeFiles/tether_control.dir/all] Interrupt\n'}
+[2.273299] (tether_control) StderrLine: {'line': b'gmake: *** [Makefile:146: all] Interrupt\n'}
+[2.274678] (tether_control) CommandEnded: {'returncode': -2}
+[2.286344] (tether_control) JobEnded: {'identifier': 'tether_control', 'rc': 'SIGINT'}
+[2.297338] (-) EventReactorShutdown: {}
