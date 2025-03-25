@@ -5,20 +5,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-find_package(ignition-cmake2 REQUIRED)
-
-find_package(ignition-plugin1 REQUIRED COMPONENTS register)
-set(IGN_PLUGIN_VER ${ignition-plugin1_VERSION_MAJOR})
-
-# find_package(ignition-gazebo6 REQUIRED)
-# add_library(tether_control SHARED CommandActor.cc)
-# set_property(TARGET tether_control PROPERTY CXX_STANDARD 17)
-# target_link_libraries(tether_control
-#   PRIVATE ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
-#   PRIVATE ignition-gazebo6::ignition-gazebo6)
-
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
+# add_executable(talker src/publisher_member_function.cpp)
+# ament_target_dependencies(talker rclcpp std_msgs)
 
 install(
   DIRECTORY
@@ -26,6 +19,7 @@ install(
     launch
     models
     worlds
+    config
   DESTINATION
     share/${PROJECT_NAME}/
 )
