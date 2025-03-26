@@ -1,0 +1,24 @@
+--- # check this link for type info: https://github.com/gazebosim/ros_gz/blob/ros2/ros_gz_bridge/README.md
+- ros_topic_name: /x500/sensor/GPSFix 
+  gz_topic_name: /world/default/model/x500_0/link/base_link/sensor/navsat_sensor/navsat
+  ros_type_name: sensor_msgs/msg/NavSatFix
+  gz_type_name: gz.msgs.NavSat
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: rosgraph_msgs/msg/Clock
+  gz_type_name: gz.msgs.Clock
+  direction: GZ_TO_ROS
+
+- ros_topic_name: /winch/controller 
+  gz_topic_name: /winch/controller 
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+
+- ros_topic_name: /tether/drone_joint/ForceTorque
+  gz_topic_name: /tether/drone_joint/ForceTorque
+  ros_type_name: geometry_msgs/msg/Wrench
+  gz_type_name: gz.msgs.Wrench
+  direction: GZ_TO_ROS

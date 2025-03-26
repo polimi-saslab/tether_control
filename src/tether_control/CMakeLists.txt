@@ -10,8 +10,18 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
-# add_executable(talker src/publisher_member_function.cpp)
-# ament_target_dependencies(talker rclcpp std_msgs)
+# Specify the include directories
+include_directories(
+  include
+)
+
+add_executable(tether_control_node
+  src/main.cpp
+  src/tether_control.cpp
+)
+ament_target_dependencies(tether_control_node
+  rclcpp 
+  std_msgs)
 
 install(
   DIRECTORY
@@ -25,8 +35,8 @@ install(
 )
 
 install(
-  PROGRAMS
-  scripts/attach_tether.py
+  TARGETS
+  tether_control_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
