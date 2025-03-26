@@ -2,9 +2,8 @@
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, IncludeLaunchDescription, ExecuteProcess
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, ExecuteProcess, TimerAction
 from launch.substitutions import LaunchConfiguration
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 import os
 from tempfile import NamedTemporaryFile
@@ -49,6 +48,17 @@ def launch_setup(context, *args, **kwargs):
         output='screen'
     )
 
+    offboard_node = Node(
+        package='tether_control',
+        executable='offboard_control_node',
+        output='screen'
+    )
+
+    delayed_offboard_node = TimerAction(
+        period=35.0,
+        actions=[offboard_node]
+    )
+
     udp_process = ExecuteProcess(
             cmd=['MicroXRCEAgent', 'udp4', '-p', '8888'],
             output='screen')
@@ -67,7 +77,8 @@ def launch_setup(context, *args, **kwargs):
         # file_server2_node,
         # gazebo_node,
         # spawn_entity,
-        gazebo_bridge_node,
         udp_process,
-        px4_process
+        px4_process,
+        # gazebo_bridge_node,
+        # delayed_offboard_node
     ]

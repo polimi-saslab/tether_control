@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(px4_msgs REQUIRED)
 
 # Specify the include directories
 include_directories(
@@ -22,6 +23,15 @@ add_executable(tether_control_node
 ament_target_dependencies(tether_control_node
   rclcpp 
   std_msgs)
+  
+add_executable(offboard_control_node
+  src/offboard_control.cpp
+)
+
+ament_target_dependencies(offboard_control_node
+  rclcpp 
+  std_msgs
+  px4_msgs)
 
 install(
   DIRECTORY
@@ -37,6 +47,7 @@ install(
 install(
   TARGETS
   tether_control_node
+  offboard_control_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
