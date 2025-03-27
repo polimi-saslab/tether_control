@@ -68,7 +68,7 @@ def launch_setup(context, *args, **kwargs):
     #     output='screen'),
 
     px4_process = ExecuteProcess(
-        cmd=['make', 'px4_sitl', 'gz_tether_cable'],
+        cmd=['make', 'px4_sitl', 'gz_x500'],
         cwd='/home/yannis/Sas_lab/PX4-Autopilot',
         output='screen'
     )
@@ -80,5 +80,5 @@ def launch_setup(context, *args, **kwargs):
         udp_process,
         px4_process,
         # gazebo_bridge_node,
-        # delayed_offboard_node
+        offboard_node
     ]
