@@ -38,25 +38,15 @@
  * @author Nuno Marques <nuno.marques@dronesolutions.io>
  */
 
-#include <px4_msgs/msg/offboard_control_mode.hpp>
-#include <px4_msgs/msg/trajectory_setpoint.hpp>
-#include <px4_msgs/msg/vehicle_command.hpp>
-#include <px4_msgs/msg/vehicle_control_mode.hpp>
-#include <px4_msgs/msg/vehicle_status.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <stdint.h>
-
-#include <chrono>
-#include <iostream>
+#include "tether_control/offboard_control.hpp"
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace px4_msgs::msg;
 
-class OffboardControl : public rclcpp::Node
+namespace offboard_control
 {
-public:
-  OffboardControl() : Node("offboard_control")
+  OffboardControl::OffboardControl() : Node("offboard_control")
   {
     offboard_control_mode_publisher_ = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
     trajectory_setpoint_publisher_ = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
@@ -94,120 +84,98 @@ public:
     timer_ = this->create_wall_timer(100ms, timer_callback);
   }
 
-  void arm();
-  void disarm();
+  /**
+   * @brief Send a command to Arm the vehicle
+   */
+  void OffboardControl::arm()
+  {
+    publish_vehicle_command(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0);
 
-private:
-  rclcpp::TimerBase::SharedPtr timer_;
-  bool isArmed = false;
-  bool preChecksPassed = false;
+    RCLCPP_INFO(this->get_logger(), "Arm command send");
+  }
 
-  rclcpp::Publisher<OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
-  rclcpp::Publisher<TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
-  rclcpp::Publisher<VehicleCommand>::SharedPtr vehicle_command_publisher_;
+  /**
+   * @brief Send a command to Disarm the vehicle
+   */
+  void OffboardControl::disarm()
+  {
+    publish_vehicle_command(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0);
 
-  rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_sub;
+    RCLCPP_INFO(this->get_logger(), "Disarm command send");
+  }
 
-  std::atomic<uint64_t> timestamp_; //!< common synced timestamped
+  /**
+   * @brief Publish the offboard control mode.
+   *        For this example, only position and altitude controls are active.
+   */
+  void OffboardControl::publish_offboard_control_mode()
+  {
+    OffboardControlMode msg{};
+    msg.position = true;
+    msg.velocity = false;
+    msg.acceleration = false;
+    msg.attitude = false;
+    msg.body_rate = false;
+    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+    offboard_control_mode_publisher_->publish(msg);
+  }
 
-  uint64_t offboard_setpoint_counter_; //!< counter for the number of setpoints sent
+  /**
+   * @brief Publish a trajectory setpoint
+   *        For this example, it sends a trajectory setpoint to make the
+   *        vehicle hover at 5 meters with a yaw angle of 180 degrees.
+   */
+  void OffboardControl::publish_trajectory_setpoint()
+  {
+    TrajectorySetpoint msg{};
+    msg.position = {0.0, 0.0, -5.0};
+    msg.yaw = -3.14; // [-PI:PI]
+    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+    trajectory_setpoint_publisher_->publish(msg);
+  }
 
-  void publish_offboard_control_mode();
-  void publish_trajectory_setpoint();
-  void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0);
-  void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
-};
+  /**
+   * @brief Publish vehicle commands
+   * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
+   * @param param1    Command parameter 1
+   * @param param2    Command parameter 2
+   */
+  void OffboardControl::publish_vehicle_command(uint16_t command, float param1, float param2)
+  {
+    VehicleCommand msg{};
+    msg.param1 = param1;
+    msg.param2 = param2;
+    msg.command = command;
+    msg.target_system = 1;
+    msg.target_component = 1;
+    msg.source_system = 1;
+    msg.source_component = 1;
+    msg.from_external = true;
+    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+    vehicle_command_publisher_->publish(msg);
+  }
 
-/**
- * @brief Send a command to Arm the vehicle
- */
-void OffboardControl::arm()
-{
-  publish_vehicle_command(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0);
+  void OffboardControl::vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg)
+  {
+    if(msg.pre_flight_checks_pass)
+      {
+        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Pre-flight checks passed --------------");
+        preChecksPassed = true;
+      }
+    else
+      {
+        preChecksPassed = false;
+      }
+  }
 
-  RCLCPP_INFO(this->get_logger(), "Arm command send");
-}
-
-/**
- * @brief Send a command to Disarm the vehicle
- */
-void OffboardControl::disarm()
-{
-  publish_vehicle_command(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0);
-
-  RCLCPP_INFO(this->get_logger(), "Disarm command send");
-}
-
-/**
- * @brief Publish the offboard control mode.
- *        For this example, only position and altitude controls are active.
- */
-void OffboardControl::publish_offboard_control_mode()
-{
-  OffboardControlMode msg{};
-  msg.position = true;
-  msg.velocity = false;
-  msg.acceleration = false;
-  msg.attitude = false;
-  msg.body_rate = false;
-  msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-  offboard_control_mode_publisher_->publish(msg);
-}
-
-/**
- * @brief Publish a trajectory setpoint
- *        For this example, it sends a trajectory setpoint to make the
- *        vehicle hover at 5 meters with a yaw angle of 180 degrees.
- */
-void OffboardControl::publish_trajectory_setpoint()
-{
-  TrajectorySetpoint msg{};
-  msg.position = {0.0, 0.0, -5.0};
-  msg.yaw = -3.14; // [-PI:PI]
-  msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-  trajectory_setpoint_publisher_->publish(msg);
-}
-
-/**
- * @brief Publish vehicle commands
- * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
- * @param param1    Command parameter 1
- * @param param2    Command parameter 2
- */
-void OffboardControl::publish_vehicle_command(uint16_t command, float param1, float param2)
-{
-  VehicleCommand msg{};
-  msg.param1 = param1;
-  msg.param2 = param2;
-  msg.command = command;
-  msg.target_system = 1;
-  msg.target_component = 1;
-  msg.source_system = 1;
-  msg.source_component = 1;
-  msg.from_external = true;
-  msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-  vehicle_command_publisher_->publish(msg);
-}
-
-void OffboardControl::vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg)
-{
-  if(msg.pre_flight_checks_pass)
-    {
-      RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Pre-flight checks passed --------------");
-      preChecksPassed = true;
-    }
-  else
-    {
-      preChecksPassed = false;
-    }
-}
+} // namespace offboard_control
 
 int main(int argc, char *argv[])
 {
   std::cout << "Starting offboard control node..." << std::endl;
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<OffboardControl>());
+  rclcpp::spin(std::make_shared<offboard_control::OffboardControl>());
 
   rclcpp::shutdown();
   return 0;
