@@ -51,6 +51,7 @@ namespace offboard_control
     offboard_control_mode_publisher_ = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
     trajectory_setpoint_publisher_ = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
     vehicle_command_publisher_ = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
+    motor_publisher_ = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
 
     rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
@@ -58,22 +59,34 @@ namespace offboard_control
     vehicle_status_sub = this->create_subscription<VehicleStatus>(
       "/fmu/out/vehicle_status_v1", qos, std::bind(&OffboardControl::vehicleStatusSubCb, this, std::placeholders::_1));
 
+    vehicle_local_position_sub = this->create_subscription<VehicleLocalPosition>(
+      "/fmu/out/vehicle_local_position", qos,
+      std::bind(&OffboardControl::vehicleLocalPositionSubCb, this, std::placeholders::_1));
+
     offboard_setpoint_counter_ = 0;
 
     auto timer_callback = [this]() -> void {
-      if(!isArmed && preChecksPassed)
+      RCLCPP_INFO(this->get_logger(), "Publishing offboard control mode and actuator setpoint");
+      publish_offboard_control_mode();
+      publish_actuator_control();
+      // doesn't work when already armed, for iterative commands
+      if(!this->isArmed && this->preChecksPassed)
         {
           // Change to Offboard mode after 10 setpoints
           this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
 
           // Arm the vehicle
           this->arm();
-          isArmed = true;
+          this->isArmed = true;
         }
 
-      // offboard_control_mode needs to be paired with trajectory_setpoint
-      publish_offboard_control_mode();
-      publish_trajectory_setpoint();
+      // // offboard_control_mode needs to be paired with trajectory_setpoint
+      // if(this->isArmed)
+      //   {
+      //     RCLCPP_INFO(this->get_logger(), "Publishing offboard control mode and actuator setpoint");
+      //     publish_offboard_control_mode();
+      //     publish_actuator_control();
+      //   }
 
       // stop the counter after reaching 11
       if(offboard_setpoint_counter_ < 11)
@@ -81,7 +94,7 @@ namespace offboard_control
           offboard_setpoint_counter_++;
         }
     };
-    timer_ = this->create_wall_timer(100ms, timer_callback);
+    timer_ = this->create_wall_timer(10ms, timer_callback);
   }
 
   /**
@@ -111,11 +124,11 @@ namespace offboard_control
   void OffboardControl::publish_offboard_control_mode()
   {
     OffboardControlMode msg{};
-    msg.position = true;
+    msg.position = false;
     msg.velocity = false;
     msg.acceleration = false;
     msg.attitude = false;
-    msg.body_rate = false;
+    msg.direct_actuator = true;
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     offboard_control_mode_publisher_->publish(msg);
   }
@@ -155,17 +168,50 @@ namespace offboard_control
     vehicle_command_publisher_->publish(msg);
   }
 
+  /**
+   * @brief Publish vehicle commands
+   * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
+   * @param param1    Command parameter 1
+   * @param param2    Command parameter 2
+   */
+  void OffboardControl::publish_actuator_control()
+  {
+    auto msg = px4_msgs::msg::ActuatorMotors();
+    msg.timestamp = this->now().nanoseconds() / 1000; // Convert to microseconds
+    msg.control = {0.5,
+                   0.1,
+                   0.1,
+                   0.1,
+                   std::nanf("1"),
+                   std::nanf("1"),
+                   std::nanf("1"),
+                   std::nanf("1"),
+                   std::nanf("1"),
+                   std::nanf("1"),
+                   std::nanf("1"),
+                   std::nanf("1")};
+    msg.reversible_flags = 0;
+
+    motor_publisher_->publish(msg);
+  }
+
   void OffboardControl::vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg)
   {
     if(msg.pre_flight_checks_pass)
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Pre-flight checks passed --------------");
-        preChecksPassed = true;
+        this->preChecksPassed = true;
       }
     else
       {
-        preChecksPassed = false;
+        this->preChecksPassed = false;
       }
+  }
+
+  void OffboardControl::vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg)
+  {
+    // storing local pos, to convert to lambda function if we don't do anything more with the sub
+    this->local_pos_latest = msg;
   }
 
 } // namespace offboard_control

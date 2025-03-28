@@ -48,24 +48,15 @@ def launch_setup(context, *args, **kwargs):
         output='screen'
     )
 
-    offboard_node = Node(
-        package='tether_control',
-        executable='offboard_control_node',
-        output='screen'
-    )
-
-    delayed_offboard_node = TimerAction(
-        period=35.0,
-        actions=[offboard_node]
-    )
+    # offboard_node = Node(
+    #     package='tether_control',
+    #     executable='offboard_control_node',
+    #     output='screen'
+    # )
 
     udp_process = ExecuteProcess(
             cmd=['MicroXRCEAgent', 'udp4', '-p', '8888'],
             output='screen')
-    
-    # ExecuteProcess(
-    #     cmd=['/home/yannis/Downloads/QGroundControl.AppImage'],
-    #     output='screen'),
 
     px4_process = ExecuteProcess(
         cmd=['make', 'px4_sitl', 'gz_x500'],
@@ -79,6 +70,6 @@ def launch_setup(context, *args, **kwargs):
         # spawn_entity,
         udp_process,
         px4_process,
-        # gazebo_bridge_node,
-        offboard_node
+        gazebo_bridge_node,
+        # offboard_node
     ]

@@ -43,6 +43,8 @@
 #include <px4_msgs/msg/vehicle_command.hpp>
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
 #include <px4_msgs/msg/vehicle_status.hpp>
+#include <px4_msgs/msg/vehicle_local_position.hpp>
+#include <px4_msgs/msg/actuator_motors.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <stdint.h>
 
@@ -68,11 +70,21 @@ namespace offboard_control
     bool isArmed = false;
     bool preChecksPassed = false;
 
+    // PX4 subscription data
+    // VehicleStatus vehicle_status_;
+    VehicleLocalPosition local_pos_latest;
+    // VehicleControlMode vehicle_control_mode_;
+    // OffboardControlMode offboard_control_mode_;
+    // TrajectorySetpoint trajectory_setpoint_;
+    // VehicleCommand vehicle_command_;
+
     rclcpp::Publisher<OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
     rclcpp::Publisher<TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
     rclcpp::Publisher<VehicleCommand>::SharedPtr vehicle_command_publisher_;
+    rclcpp::Publisher<ActuatorMotors>::SharedPtr motor_publisher_;
 
     rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_sub;
+    rclcpp::Subscription<VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
 
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped
 
@@ -80,8 +92,10 @@ namespace offboard_control
 
     void publish_offboard_control_mode();
     void publish_trajectory_setpoint();
+    void publish_actuator_control();
     void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
+    void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
   };
 
 } // namespace offboard_control
