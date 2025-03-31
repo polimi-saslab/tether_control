@@ -91,6 +91,9 @@ namespace offboard_control
       else
         {
           RCLCPP_INFO(this->get_logger(), "Controller phase");
+          publish_offboard_control_mode({false, false, false, false, true});
+          update_motors({0.75, 0.75, 0.75, 0.75, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
+                         std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1")});
         }
       // update_motors();
       // doesn't work when already armed, for iterative commands
@@ -165,7 +168,7 @@ namespace offboard_control
   void OffboardControl::publish_trajectory_setpoint()
   {
     TrajectorySetpoint msg{};
-    msg.position = {0.0, 0.0, -5.0};
+    msg.position = {0.0, 0.0, -1.0};
     msg.yaw = -3.14; // [-PI:PI]
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     trajectory_setpoint_publisher_->publish(msg);
@@ -258,8 +261,9 @@ namespace offboard_control
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
     this->local_pos_latest = msg;
-    if(msg.z == this->starting_pos[2])
+    if((msg.z <= this->starting_pos[2] + 0.1) && (msg.z >= this->starting_pos[2] - 0.1))
       {
+        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Position ready --------------");
         this->isPosRdy = true;
       }
   }

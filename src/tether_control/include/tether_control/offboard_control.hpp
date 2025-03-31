@@ -104,7 +104,7 @@ namespace offboard_control
 
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
-    std::vector<float> starting_pos = {0.0f, 0.0f, 5.0f};
+    std::vector<float> starting_pos = {0.0f, 0.0f, -1.0f};
   };
 
 } // namespace offboard_control
