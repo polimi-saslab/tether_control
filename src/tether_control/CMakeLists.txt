@@ -24,15 +24,8 @@ add_executable(tether_control_node
   src/main.cpp
   src/tether_control.cpp
 )
-ament_target_dependencies(tether_control_node
-  rclcpp 
-  std_msgs)
-  
-add_executable(offboard_control_node
-  src/offboard_control.cpp
-)
 
-ament_target_dependencies(offboard_control_node
+ament_target_dependencies(tether_control_node
   rclcpp 
   std_msgs
   Eigen3
@@ -52,7 +45,6 @@ install(
 install(
   TARGETS
   tether_control_node
-  offboard_control_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
