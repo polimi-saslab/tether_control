@@ -82,7 +82,6 @@ namespace offboard_control
         {
           return;
         }
-      return;
       if(!this->isPosRdy)
         {
           RCLCPP_INFO(this->get_logger(), "Going to initial position");
@@ -240,6 +239,7 @@ namespace offboard_control
   void OffboardControl::vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg)
   {
     bool last_status = false;
+    this->isNodeAlive = true; // -> means VehicleStatus topic is being published hence we have a drone alive
     if(msg.pre_flight_checks_pass)
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Pre-flight checks passed --------------");
