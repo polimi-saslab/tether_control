@@ -85,10 +85,10 @@ namespace tether_control
     rclcpp::TimerBase::SharedPtr alive_timer_;
 
     // Condition variables
-    bool isArmed = false;
-    bool preChecksPassed = false;
-    bool isPosRdy = false;
-    bool isNodeAlive = false;
+    bool is_armed = false;
+    bool prechecks_passed = false;
+    bool is_at_init_pos = false;
+    bool is_node_alive = false;
 
     // Control variables
     uint8_t controlMode = ControlMode::ATTITUDE_CONTROL; // default to attitude control for the moment
@@ -124,7 +124,6 @@ namespace tether_control
     uint64_t offboard_setpoint_counter_; //!< counter for the number of setpoints sent
 
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
-    void takeOffController();
   };
 
 } // namespace tether_control

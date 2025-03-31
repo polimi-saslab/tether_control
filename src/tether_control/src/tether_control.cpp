@@ -67,7 +67,7 @@ namespace tether_control
     offboard_setpoint_counter_ = 0;
 
     auto alive_timer_callback = [this]() -> void {
-      if(this->isNodeAlive)
+      if(this->is_node_alive)
         {
           RCLCPP_INFO_ONCE(this->get_logger(), "NODE ALIVE");
           return;
@@ -79,11 +79,11 @@ namespace tether_control
     };
 
     auto timer_callback = [this]() -> void {
-      if(!this->isNodeAlive)
+      if(!this->is_node_alive)
         {
           return;
         }
-      if(!this->isPosRdy)
+      if(!this->is_at_init_pos)
         {
           RCLCPP_INFO(this->get_logger(), "Going to initial position");
           publishOffboardControlMode({true, false, false, false, false});
@@ -91,7 +91,7 @@ namespace tether_control
         }
       else if(this->controlMode == ControlMode::DIRECT_ACTUATORS)
         {
-          RCLCPP_INFO(this->get_logger(), "Control in %d mode", this->controlMode);
+          RCLCPP_INFO(this->get_logger(), "Control in mode %d", this->controlMode);
           publishOffboardControlMode({false, false, false, false, true});
           // 0.75 is T/O value for x500
           updateMotors({0.75, 0.75, 0.75, 0.75, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
@@ -99,19 +99,34 @@ namespace tether_control
         }
       else if(this->controlMode == ControlMode::ATTITUDE_CONTROL)
         {
-          RCLCPP_INFO(this->get_logger(), "Control in %d mode", this->controlMode);
+          RCLCPP_INFO(this->get_logger(), "Control in mode %d", this->controlMode);
+          // Define a slow yaw rotation (e.g., 0.01 rad per step)
+          double yaw_rate = 0.5; // Adjust for slower/faster rotation
+          Eigen::Quaterniond current_orientation = Eigen::Quaterniond::Identity();
+
+          // Apply a small yaw rotation per step
+          Eigen::AngleAxisd yaw_rotation(yaw_rate, Eigen::Vector3d::UnitZ());
+          Eigen::Quaterniond desired_quat = current_orientation * yaw_rotation;
+
+          // Thrust to hover (~9.81 m/s² in gravity, but depends on vehicle tuning)
+          Eigen::Vector4d controller_output;
+          float droneThrust = 0.73;
+          controller_output << 0.0, 0.0, 0.0, droneThrust; // Need to control thrust for hovering
+
+          // Publish the setpoint
           publishOffboardControlMode({false, false, false, true, false});
+          publishAttitudeSetpoint(controller_output, desired_quat);
         }
       // update_motors();
       // doesn't work when already armed, for iterative commands
-      if(!this->isArmed && this->preChecksPassed)
+      if(!this->is_armed && this->prechecks_passed)
         {
           // Change to Offboard mode after 10 setpoints
           this->publishVehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
 
           // Arm the vehicle
           this->arm();
-          this->isArmed = true;
+          this->is_armed = true;
         }
 
       // stop the counter after reaching 11
@@ -221,49 +236,6 @@ namespace tether_control
     actuators_motors_pub->publish(act_motors);
   }
 
-  /**
-   * @brief Take-off controller
-   * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
-   * @param param1    Command parameter 1
-   * @param param2    Command parameter 2
-   */
-  void TetherControl::takeOffController()
-  {
-    auto msg = px4_msgs::msg::ActuatorMotors();
-    msg.timestamp = this->now().nanoseconds() / 1000; // Convert to microseconds
-    msg.control = {0.5,
-                   0.1,
-                   0.1,
-                   0.1,
-                   std::nanf("1"),
-                   std::nanf("1"),
-                   std::nanf("1"),
-                   std::nanf("1"),
-                   std::nanf("1"),
-                   std::nanf("1"),
-                   std::nanf("1"),
-                   std::nanf("1")};
-    msg.reversible_flags = 0;
-  }
-
-  void TetherControl::vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg)
-  {
-    bool last_status = false;
-    this->isNodeAlive = true; // -> means VehicleStatus topic is being published hence we have a drone alive
-    if(msg.pre_flight_checks_pass)
-      {
-        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Pre-flight checks passed --------------");
-        this->preChecksPassed = true;
-        last_status = true;
-      }
-    else if((last_status) && (!msg.pre_flight_checks_pass)) // should not happen theoretically
-      {
-        RCLCPP_INFO(this->get_logger(), "PREFLIGHT CHECKS NO LONGER PASS");
-        this->preChecksPassed = false;
-        last_status = false;
-      }
-  }
-
   void TetherControl::publishAttitudeSetpoint(const Eigen::Vector4d &controller_output,
                                               const Eigen::Quaterniond &desired_quat)
   {
@@ -271,7 +243,7 @@ namespace tether_control
     // Prepare AttitudeSetpoint msg;
     attitude_setpoint_msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     Eigen::Quaterniond rotated_quat;
-    rotated_quat = rotateQuaternionFromToENU_NED(desired_quaternion);
+    rotated_quat = rotateQuaternionFromToENU_NED(desired_quat);
     attitude_setpoint_msg.q_d[0] = rotated_quat.w();
     attitude_setpoint_msg.q_d[1] = rotated_quat.x();
     attitude_setpoint_msg.q_d[2] = rotated_quat.y();
@@ -291,6 +263,26 @@ namespace tether_control
     attitude_pub_->publish(attitude_setpoint_msg);
   }
 
+  // Callback functions
+
+  void TetherControl::vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg)
+  {
+    bool last_status = false;
+    this->is_node_alive = true; // -> means VehicleStatus topic is being published hence we have a drone alive
+    if(msg.pre_flight_checks_pass)
+      {
+        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Pre-flight checks passed --------------");
+        this->prechecks_passed = true;
+        last_status = true;
+      }
+    else if((last_status) && (!msg.pre_flight_checks_pass)) // should not happen theoretically
+      {
+        RCLCPP_INFO(this->get_logger(), "PREFLIGHT CHECKS NO LONGER PASS");
+        this->prechecks_passed = false;
+        last_status = false;
+      }
+  }
+
   void TetherControl::vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg)
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
@@ -298,7 +290,7 @@ namespace tether_control
     if((msg.z <= this->starting_pos[2] + 0.1) && (msg.z >= this->starting_pos[2] - 0.1))
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Position ready --------------");
-        this->isPosRdy = true;
+        this->is_at_init_pos = true;
       }
   }
 
