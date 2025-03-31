@@ -65,10 +65,35 @@ namespace offboard_control
 
     offboard_setpoint_counter_ = 0;
 
+    auto alive_timer_callback = [this]() -> void {
+      if(this->isNodeAlive)
+        {
+          RCLCPP_INFO_ONCE(this->get_logger(), "NODE ALIVE");
+          return;
+        }
+      else
+        {
+          RCLCPP_INFO(this->get_logger(), "Drone not alive ...");
+        }
+    };
+
     auto timer_callback = [this]() -> void {
-      RCLCPP_INFO(this->get_logger(), "Publishing offboard control mode and actuator setpoint");
-      publish_offboard_control_mode();
-      update_motors();
+      if(!this->isNodeAlive)
+        {
+          return;
+        }
+      return;
+      if(!this->isPosRdy)
+        {
+          RCLCPP_INFO(this->get_logger(), "Going to initial position");
+          publish_offboard_control_mode({true, false, false, false, false});
+          publish_trajectory_setpoint();
+        }
+      else
+        {
+          RCLCPP_INFO(this->get_logger(), "Controller phase");
+        }
+      // update_motors();
       // doesn't work when already armed, for iterative commands
       if(!this->isArmed && this->preChecksPassed)
         {
@@ -80,14 +105,6 @@ namespace offboard_control
           this->isArmed = true;
         }
 
-      // // offboard_control_mode needs to be paired with trajectory_setpoint
-      // if(this->isArmed)
-      //   {
-      //     RCLCPP_INFO(this->get_logger(), "Publishing offboard control mode and actuator setpoint");
-      //     publish_offboard_control_mode();
-      //     update_motors();
-      //   }
-
       // stop the counter after reaching 11
       if(offboard_setpoint_counter_ < 11)
         {
@@ -95,6 +112,7 @@ namespace offboard_control
         }
     };
     timer_ = this->create_wall_timer(10ms, timer_callback);
+    alive_timer_ = this->create_wall_timer(1000ms, alive_timer_callback);
   }
 
   /**
@@ -121,14 +139,21 @@ namespace offboard_control
    * @brief Publish the offboard control mode.
    *        For this example, only position and altitude controls are active.
    */
-  void OffboardControl::publish_offboard_control_mode()
+  void OffboardControl::publish_offboard_control_mode(const std::vector<bool> &control_modes)
   {
+    if(control_modes.size() != 5)
+      {
+        RCLCPP_ERROR(this->get_logger(), "Invalid control_modes vector size. Expected 5 elements.");
+        return;
+      }
+
     OffboardControlMode msg{};
-    msg.position = false;
-    msg.velocity = false;
-    msg.acceleration = false;
-    msg.attitude = false;
-    msg.direct_actuator = true;
+    msg.position = control_modes[0];
+    msg.velocity = control_modes[1];
+    msg.acceleration = control_modes[2];
+    msg.attitude = control_modes[3];
+    msg.direct_actuator = control_modes[4];
+
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     offboard_control_mode_publisher_->publish(msg);
   }
@@ -176,14 +201,12 @@ namespace offboard_control
    */
   void OffboardControl::update_motors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands)
   {
-    auto msg = px4_msgs::msg::ActuatorMotors();
     px4_msgs::msg::ActuatorMotors act_motors{};
     for(int i = 0; i < kMaxNumMotors; ++i)
       {
         act_motors.control[i] = motor_commands(i);
       }
-    act_motors.timestamp = 0;                         // Let PX4 set the timestamp
-    msg.timestamp = this->now().nanoseconds() / 1000; // Convert to microseconds
+    act_motors.timestamp = 0; // Let PX4 set the timestamp
     act_motors.reversible_flags = 0;
 
     actuators_motors_pub->publish(act_motors);
@@ -212,20 +235,22 @@ namespace offboard_control
                    std::nanf("1"),
                    std::nanf("1")};
     msg.reversible_flags = 0;
-
-    motor_publisher_->publish(msg);
   }
 
   void OffboardControl::vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg)
   {
+    bool last_status = false;
     if(msg.pre_flight_checks_pass)
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Pre-flight checks passed --------------");
         this->preChecksPassed = true;
+        last_status = true;
       }
-    else
+    else if((last_status) && (!msg.pre_flight_checks_pass)) // should not happen theoretically
       {
+        RCLCPP_INFO(this->get_logger(), "PREFLIGHT CHECKS NO LONGER PASS");
         this->preChecksPassed = false;
+        last_status = false;
       }
   }
 
@@ -233,6 +258,10 @@ namespace offboard_control
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
     this->local_pos_latest = msg;
+    if(msg.z == this->starting_pos[2])
+      {
+        this->isPosRdy = true;
+      }
   }
 
 } // namespace offboard_control

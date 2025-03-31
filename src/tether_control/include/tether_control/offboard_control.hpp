@@ -69,17 +69,18 @@ namespace offboard_control
     void disarm();
 
   private:
+    // Timers
     rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::TimerBase::SharedPtr alive_timer_;
+
+    // Condition variables
     bool isArmed = false;
     bool preChecksPassed = false;
+    bool isPosRdy = false;
+    bool isNodeAlive = false;
 
     // PX4 subscription data
-    // VehicleStatus vehicle_status_;
     VehicleLocalPosition local_pos_latest;
-    // VehicleControlMode vehicle_control_mode_;
-    // OffboardControlMode offboard_control_mode_;
-    // TrajectorySetpoint trajectory_setpoint_;
-    // VehicleCommand vehicle_command_;
 
     rclcpp::Publisher<OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
     rclcpp::Publisher<TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
@@ -93,12 +94,17 @@ namespace offboard_control
 
     uint64_t offboard_setpoint_counter_; //!< counter for the number of setpoints sent
 
-    void publish_offboard_control_mode();
+    void publish_offboard_control_mode(const std::vector<bool> &control_modes);
     void publish_trajectory_setpoint();
     void update_motors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
     void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
+    void to_controller();
+
+    std::vector<bool> position_control = {true, false, false, false, false};
+    std::vector<bool> direct_actuator_control = {false, false, false, false, true};
+    std::vector<float> starting_pos = {0.0f, 0.0f, 5.0f};
   };
 
 } // namespace offboard_control
