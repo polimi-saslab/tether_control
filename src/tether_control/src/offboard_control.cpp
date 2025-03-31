@@ -51,7 +51,7 @@ namespace offboard_control
     offboard_control_mode_publisher_ = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
     trajectory_setpoint_publisher_ = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
     vehicle_command_publisher_ = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
-    motor_publisher_ = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
+    actuators_motors_pub = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
 
     rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
@@ -68,7 +68,7 @@ namespace offboard_control
     auto timer_callback = [this]() -> void {
       RCLCPP_INFO(this->get_logger(), "Publishing offboard control mode and actuator setpoint");
       publish_offboard_control_mode();
-      publish_actuator_control();
+      update_motors();
       // doesn't work when already armed, for iterative commands
       if(!this->isArmed && this->preChecksPassed)
         {
@@ -85,7 +85,7 @@ namespace offboard_control
       //   {
       //     RCLCPP_INFO(this->get_logger(), "Publishing offboard control mode and actuator setpoint");
       //     publish_offboard_control_mode();
-      //     publish_actuator_control();
+      //     update_motors();
       //   }
 
       // stop the counter after reaching 11
@@ -174,7 +174,28 @@ namespace offboard_control
    * @param param1    Command parameter 1
    * @param param2    Command parameter 2
    */
-  void OffboardControl::publish_actuator_control()
+  void OffboardControl::update_motors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands)
+  {
+    auto msg = px4_msgs::msg::ActuatorMotors();
+    px4_msgs::msg::ActuatorMotors act_motors{};
+    for(int i = 0; i < kMaxNumMotors; ++i)
+      {
+        act_motors.control[i] = motor_commands(i);
+      }
+    act_motors.timestamp = 0;                         // Let PX4 set the timestamp
+    msg.timestamp = this->now().nanoseconds() / 1000; // Convert to microseconds
+    act_motors.reversible_flags = 0;
+
+    actuators_motors_pub->publish(act_motors);
+  }
+
+  /**
+   * @brief Take-off controller
+   * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
+   * @param param1    Command parameter 1
+   * @param param2    Command parameter 2
+   */
+  void OffboardControl::to_controller()
   {
     auto msg = px4_msgs::msg::ActuatorMotors();
     msg.timestamp = this->now().nanoseconds() / 1000; // Convert to microseconds

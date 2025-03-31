@@ -45,6 +45,7 @@
 #include <px4_msgs/msg/vehicle_status.hpp>
 #include <px4_msgs/msg/vehicle_local_position.hpp>
 #include <px4_msgs/msg/actuator_motors.hpp>
+#include <Eigen/Core>
 #include <rclcpp/rclcpp.hpp>
 #include <stdint.h>
 
@@ -60,7 +61,9 @@ namespace offboard_control
   class OffboardControl : public rclcpp::Node
   {
   public:
-    OffboardControl();
+    explicit OffboardControl();
+
+    static constexpr int kMaxNumMotors = px4_msgs::msg::ActuatorMotors::NUM_CONTROLS;
 
     void arm();
     void disarm();
@@ -81,7 +84,7 @@ namespace offboard_control
     rclcpp::Publisher<OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
     rclcpp::Publisher<TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
     rclcpp::Publisher<VehicleCommand>::SharedPtr vehicle_command_publisher_;
-    rclcpp::Publisher<ActuatorMotors>::SharedPtr motor_publisher_;
+    rclcpp::Publisher<ActuatorMotors>::SharedPtr actuators_motors_pub;
 
     rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_sub;
     rclcpp::Subscription<VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
@@ -92,7 +95,7 @@ namespace offboard_control
 
     void publish_offboard_control_mode();
     void publish_trajectory_setpoint();
-    void publish_actuator_control();
+    void update_motors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
     void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
