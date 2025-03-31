@@ -52,6 +52,7 @@ namespace offboard_control
     trajectory_setpoint_publisher_ = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
     vehicle_command_publisher_ = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
     actuators_motors_pub = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
+    attitude_pub_ = this->create_publisher<VehicleAttitudeSetpoint>("/fmu/in/vehicle_attitude_setpoint", 10);
 
     rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
@@ -85,22 +86,28 @@ namespace offboard_control
       if(!this->isPosRdy)
         {
           RCLCPP_INFO(this->get_logger(), "Going to initial position");
-          publish_offboard_control_mode({true, false, false, false, false});
-          publish_trajectory_setpoint();
+          publishOffboardControlMode({true, false, false, false, false});
+          publishTrajectorySetpoint();
         }
-      else
+      else if(this->controlMode == ControlMode::DIRECT_ACTUATORS)
         {
-          RCLCPP_INFO(this->get_logger(), "Controller phase");
-          publish_offboard_control_mode({false, false, false, false, true});
-          update_motors({0.75, 0.75, 0.75, 0.75, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
-                         std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1")});
+          RCLCPP_INFO(this->get_logger(), "Control in %d mode", this->controlMode);
+          publishOffboardControlMode({false, false, false, false, true});
+          // 0.75 is T/O value for x500
+          updateMotors({0.75, 0.75, 0.75, 0.75, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
+                        std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1")});
+        }
+      else if(this->controlMode == ControlMode::ATTITUDE_CONTROL)
+        {
+          RCLCPP_INFO(this->get_logger(), "Control in %d mode", this->controlMode);
+          publishOffboardControlMode({false, false, false, true, false});
         }
       // update_motors();
       // doesn't work when already armed, for iterative commands
       if(!this->isArmed && this->preChecksPassed)
         {
           // Change to Offboard mode after 10 setpoints
-          this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+          this->publishVehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
 
           // Arm the vehicle
           this->arm();
@@ -122,7 +129,7 @@ namespace offboard_control
    */
   void OffboardControl::arm()
   {
-    publish_vehicle_command(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0);
+    publishVehicleCommand(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0);
 
     RCLCPP_INFO(this->get_logger(), "Arm command send");
   }
@@ -132,7 +139,7 @@ namespace offboard_control
    */
   void OffboardControl::disarm()
   {
-    publish_vehicle_command(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0);
+    publishVehicleCommand(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0);
 
     RCLCPP_INFO(this->get_logger(), "Disarm command send");
   }
@@ -141,7 +148,7 @@ namespace offboard_control
    * @brief Publish the offboard control mode.
    *        For this example, only position and altitude controls are active.
    */
-  void OffboardControl::publish_offboard_control_mode(const std::vector<bool> &control_modes)
+  void OffboardControl::publishOffboardControlMode(const std::vector<bool> &control_modes)
   {
     if(control_modes.size() != 5)
       {
@@ -165,7 +172,7 @@ namespace offboard_control
    *        For this example, it sends a trajectory setpoint to make the
    *        vehicle hover at 5 meters with a yaw angle of 180 degrees.
    */
-  void OffboardControl::publish_trajectory_setpoint()
+  void OffboardControl::publishTrajectorySetpoint()
   {
     TrajectorySetpoint msg{};
     msg.position = {0.0, 0.0, -1.0};
@@ -180,7 +187,7 @@ namespace offboard_control
    * @param param1    Command parameter 1
    * @param param2    Command parameter 2
    */
-  void OffboardControl::publish_vehicle_command(uint16_t command, float param1, float param2)
+  void OffboardControl::publishVehicleCommand(uint16_t command, float param1, float param2)
   {
     VehicleCommand msg{};
     msg.param1 = param1;
@@ -201,7 +208,7 @@ namespace offboard_control
    * @param param1    Command parameter 1
    * @param param2    Command parameter 2
    */
-  void OffboardControl::update_motors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands)
+  void OffboardControl::updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands)
   {
     px4_msgs::msg::ActuatorMotors act_motors{};
     for(int i = 0; i < kMaxNumMotors; ++i)
@@ -220,7 +227,7 @@ namespace offboard_control
    * @param param1    Command parameter 1
    * @param param2    Command parameter 2
    */
-  void OffboardControl::to_controller()
+  void OffboardControl::takeOffController()
   {
     auto msg = px4_msgs::msg::ActuatorMotors();
     msg.timestamp = this->now().nanoseconds() / 1000; // Convert to microseconds
@@ -255,6 +262,33 @@ namespace offboard_control
         this->preChecksPassed = false;
         last_status = false;
       }
+  }
+
+  void OffboardControl::publishAttitudeSetpointMsg(const Eigen::Vector4d &controller_output,
+                                                   const Eigen::Quaterniond &desired_quaternion)
+  {
+    px4_msgs::msg::VehicleAttitudeSetpoint attitude_setpoint_msg;
+    // Prepare AttitudeSetpoint msg;
+    attitude_setpoint_msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+    Eigen::Quaterniond rotated_quat;
+    rotated_quat = rotateQuaternionFromToENU_NED(desired_quaternion);
+    attitude_setpoint_msg.q_d[0] = rotated_quat.w();
+    attitude_setpoint_msg.q_d[1] = rotated_quat.x();
+    attitude_setpoint_msg.q_d[2] = rotated_quat.y();
+    attitude_setpoint_msg.q_d[3] = rotated_quat.z();
+
+    if(controller_output[3] > 0.1)
+      {
+        attitude_setpoint_msg.thrust_body[0] = 0.0;
+        attitude_setpoint_msg.thrust_body[1] = 0.0;
+        attitude_setpoint_msg.thrust_body[2] = -controller_output[3]; // DO NOT FORGET THE MINUS SIGN (body NED frame)
+      }
+    else
+      {
+        attitude_setpoint_msg.thrust_body[2] = -0.1;
+      }
+
+    attitude_pub_->publish(attitude_setpoint_msg);
   }
 
   void OffboardControl::vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg)

@@ -38,16 +38,18 @@
  * @author Nuno Marques <nuno.marques@dronesolutions.io>
  */
 
+#include <px4_msgs/msg/actuator_motors.hpp>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
 #include <px4_msgs/msg/trajectory_setpoint.hpp>
 #include <px4_msgs/msg/vehicle_command.hpp>
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
 #include <px4_msgs/msg/vehicle_status.hpp>
 #include <px4_msgs/msg/vehicle_local_position.hpp>
-#include <px4_msgs/msg/actuator_motors.hpp>
+#include <px4_msgs/msg/vehicle_attitude_setpoint.hpp>
 #include <Eigen/Core>
 #include <rclcpp/rclcpp.hpp>
 #include <stdint.h>
+#include <tether_control/control.h>
 
 #include <chrono>
 #include <iostream>
@@ -68,6 +70,15 @@ namespace offboard_control
     void arm();
     void disarm();
 
+    enum ControlMode
+    {
+      POSITION_CONTROL = 0,
+      VELOCITY_CONTROL = 1,
+      ACCELERATION_CONTROL = 2,
+      ATTITUDE_CONTROL = 3,
+      DIRECT_ACTUATORS = 4
+    };
+
   private:
     // Timers
     rclcpp::TimerBase::SharedPtr timer_;
@@ -78,12 +89,14 @@ namespace offboard_control
     bool preChecksPassed = false;
     bool isPosRdy = false;
     bool isNodeAlive = false;
+    uint8_t controlMode = ControlMode::ATTITUDE_CONTROL; // default to attitude control for the moment
 
     // PX4 subscription data
     VehicleLocalPosition local_pos_latest;
 
     rclcpp::Publisher<OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
     rclcpp::Publisher<TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
+    rclcpp::Publisher<VehicleAttitudeSetpoint>::SharedPtr attitude_pub_;
     rclcpp::Publisher<VehicleCommand>::SharedPtr vehicle_command_publisher_;
     rclcpp::Publisher<ActuatorMotors>::SharedPtr actuators_motors_pub;
 
@@ -94,13 +107,18 @@ namespace offboard_control
 
     uint64_t offboard_setpoint_counter_; //!< counter for the number of setpoints sent
 
-    void publish_offboard_control_mode(const std::vector<bool> &control_modes);
-    void publish_trajectory_setpoint();
-    void update_motors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
-    void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0);
+    void publishOffboardControlMode(const std::vector<bool> &control_modes);
+    void publishTrajectorySetpoint();
+    void publishAttitudeSetpoint();
+    void publishVehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0);
+    void
+    publishAttitudeSetpointMsg(const Eigen::Vector4d &controller_output, const Eigen::Quaterniond &desired_quaternion);
+
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
-    void to_controller();
+
+    void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
+    void takeOffController();
 
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
