@@ -10,15 +10,26 @@ find_package(ament_cmake REQUIRED)
 find_package(px4_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-# find_package(eigen3_cmake_module REQUIRED)
-# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
-include_directories(include SYSTEM ${Eigen3_INCLUDE_DIRS})
+find_package(gz-cmake3 REQUIRED)
+find_package(gz-plugin2 REQUIRED COMPONENTS register)
+find_package(gz-sim8 REQUIRED)
+find_package(rmw REQUIRED)
+
+set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
 include_directories(
-  include
-)
+  include 
+  SYSTEM ${Eigen3_INCLUDE_DIRS}
+  ${rclcpp_INCLUDE_DIRS}
+  ${rmw_INCLUDE_DIRS})
+
+add_library(apply_force_plugin SHARED src/apply_force_plugin.cpp)
+set_property(TARGET apply_force_plugin PROPERTY CXX_STANDARD 17)
+target_link_libraries(apply_force_plugin
+  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  PRIVATE gz-sim8::gz-sim8)
 
 add_executable(tether_control_node
   src/main.cpp
@@ -45,17 +56,8 @@ install(
 install(
   TARGETS
   tether_control_node
+  apply_force_plugin
   DESTINATION lib/${PROJECT_NAME}
 )
-
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  
-  set(ament_cmake_copyright_FOUND TRUE)
-  
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
 
 ament_package()
