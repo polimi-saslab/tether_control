@@ -57,7 +57,7 @@ namespace force_plugin
     rclcpp_thread_ = std::thread([this]() { rclcpp::spin(node_); });
   }
 
-  // frequency is determined by world sdf variable: max_step_size
+  // frequency is determined by world sdf variable: max_step_size (which is of 0.004 = 250Hz at the moment of implem)
   void ForcePlugin::PreUpdate(const gz::sim::UpdateInfo & /*info*/, gz::sim::EntityComponentManager &ecm)
   {
     auto linVelComp = ecm.Component<gz::sim::components::LinearVelocityCmd>(baseLinkEntity_);
