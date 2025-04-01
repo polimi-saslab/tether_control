@@ -35,7 +35,7 @@ namespace force_plugin
     if(sdf->HasElement("bodyName"))
       bodyName = sdf->Get<std::string>("bodyName");
 
-    RCLCPP_INFO(rclcpp::get_logger("force_plugin"), "ForcePlugin: bodyName = %s", bodyName.c_str());
+    // RCLCPP_INFO(rclcpp::get_logger("force_plugin"), "ForcePlugin: bodyName = %s", bodyName.c_str());
     baseLinkEntity_ = model.LinkByName(ecm, bodyName);
     if(!baseLinkEntity_)
       {
@@ -44,7 +44,7 @@ namespace force_plugin
         return;
       }
 
-    // Read topic name from SDF
+    // // Read topic name from SDF
     std::string tetherForceTopic = "cmd_vel";
     if(sdf->HasElement("tetherForceTopic"))
       tetherForceTopic = sdf->Get<std::string>("tetherForceTopic");
@@ -70,8 +70,8 @@ namespace force_plugin
       }
     else
       {
-        ecm.CreateComponent(baseLinkEntity_, gz::sim::components::LinearVelocityCmd(force_));
-        ecm.CreateComponent(baseLinkEntity_, gz::sim::components::AngularVelocityCmd(torque_));
+        // ecm.CreateComponent(baseLinkEntity_, gz::sim::components::LinearVelocityCmd(force_));
+        // ecm.CreateComponent(baseLinkEntity_, gz::sim::components::AngularVelocityCmd(torque_));
       }
   }
 
@@ -80,8 +80,5 @@ namespace force_plugin
     // Store force and torque directly in Vector3d
     force_.Set(msg->force.x, msg->force.y, msg->force.z);
     torque_.Set(msg->torque.x, msg->torque.y, msg->torque.z);
-
-    RCLCPP_INFO(node_->get_logger(), "Received Wrench - Force: [%f, %f, %f], Torque: [%f, %f, %f]", force_.X(),
-                force_.Y(), force_.Z(), torque_.X(), torque_.Y(), torque_.Z());
   }
 }
