@@ -13,30 +13,21 @@ namespace gz
 {
   namespace sim
   {
-    class ApplyForcePlugin : public System
+    class ApplyForcePlugin : public SystemInterface
     {
     public:
       ApplyForcePlugin();
-      virtual ~ApplyForcePlugin();
+      ~ApplyForcePlugin() override;
 
-      // Load the plugin
-      void Configure(const gz::sim::Entity &entity, const std::shared_ptr<const sdf::Element> &sdf) override;
-
-      // ROS 2 Callback to apply force
-      void ApplyForceCallback(const geometry_msgs::msg::Wrench::SharedPtr msg);
+      void Configure(const gz::sim::Entity &entity) override;
+      void Update(const gz::sim::UpdateInfo &info) override;
 
     private:
-      // ROS 2 Node for subscription
-      rclcpp::Node::SharedPtr node_;
+      void forceCallback(const geometry_msgs::msg::Vector3::SharedPtr msg);
 
-      // ROS Transport Node
-      gz::transport::Node gz_node_;
-
-      // Subscriber to apply forces
-      gz::transport::SubscriberPtr force_subscriber_;
-
-      // Entity representing the drone in Gazebo
-      gz::sim::Entity entity_;
+      gz::sim::LinkPtr link_;                                                  // Link to apply force to
+      rclcpp::Subscription<geometry_msgs::msg::Vector3>::SharedPtr force_sub_; // ROS2 subscriber
+      rclcpp::Node::SharedPtr node_;                                           // ROS2 node
     };
   } // namespace sim
 } // namespace gz

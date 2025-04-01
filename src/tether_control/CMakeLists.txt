@@ -12,24 +12,21 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(gz-cmake3 REQUIRED)
-find_package(gz-plugin2 REQUIRED COMPONENTS register)
-find_package(gz-sim8 REQUIRED)
-find_package(rmw REQUIRED)
+# find_package(rmw REQUIRED)
+# find_package(geometry_msgs REQUIRED)
 
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
 include_directories(
   include 
-  SYSTEM ${Eigen3_INCLUDE_DIRS}
-  ${rclcpp_INCLUDE_DIRS}
-  ${rmw_INCLUDE_DIRS})
+  SYSTEM ${Eigen3_INCLUDE_DIRS})
 
-add_library(apply_force_plugin SHARED src/apply_force_plugin.cpp)
-set_property(TARGET apply_force_plugin PROPERTY CXX_STANDARD 17)
-target_link_libraries(apply_force_plugin
-  PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-  PRIVATE gz-sim8::gz-sim8)
+# add_library(apply_force_plugin SHARED src/apply_force_plugin.cpp)
+# set_property(TARGET apply_force_plugin PROPERTY CXX_STANDARD 17)
+# target_link_libraries(apply_force_plugin
+#   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+#   PRIVATE gz-sim8::gz-sim8
+#   ${rclcpp_LIBRARIES})
 
 add_executable(tether_control_node
   src/main.cpp
@@ -49,14 +46,54 @@ install(
     models
     worlds
     config
+    gz_plugin
   DESTINATION
     share/${PROJECT_NAME}/
+)
+
+## GZ PLUGIN
+find_package(gz-cmake3 REQUIRED)
+find_package(gz-plugin2 REQUIRED COMPONENTS register)
+find_package(gz-sim8 REQUIRED)
+find_package(geometry_msgs REQUIRED)
+set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
+
+gz_find_package(gz-sim8 REQUIRED)
+set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
+
+add_library(
+  force_plugin 
+  SHARED 
+  gz_plugin/force_plugin.cpp
+)
+
+target_compile_features(force_plugin PUBLIC cxx_std_17)
+target_include_directories(force_plugin PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/gz_plugin/include>
+  $<INSTALL_INTERFACE:include/force_plugin>
+)
+
+ament_target_dependencies(
+  force_plugin PUBLIC
+  geometry_msgs
+  rclcpp
+)
+
+target_link_libraries(force_plugin PUBLIC
+  gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+)
+
+install(
+  TARGETS force_plugin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
 install(
   TARGETS
   tether_control_node
-  apply_force_plugin
   DESTINATION lib/${PROJECT_NAME}
 )
 
