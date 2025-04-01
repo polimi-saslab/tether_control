@@ -6,6 +6,7 @@
 #include <gz/sim/Model.hh>
 #include <gz/transport/Node.hh>
 #include <rclcpp/rclcpp.hpp>
+#include <gz/sim/components/ExternalWorldWrenchCmd.hh>
 
 GZ_ADD_PLUGIN(force_plugin::ForcePlugin, gz::sim::System, gz::sim::ISystemConfigure, gz::sim::ISystemPreUpdate)
 
@@ -35,8 +36,8 @@ namespace force_plugin
     if(sdf->HasElement("bodyName"))
       bodyName = sdf->Get<std::string>("bodyName");
 
-    // RCLCPP_INFO(rclcpp::get_logger("force_plugin"), "ForcePlugin: bodyName = %s", bodyName.c_str());
     baseLinkEntity_ = model.LinkByName(ecm, bodyName);
+
     if(!baseLinkEntity_)
       {
         RCLCPP_ERROR(rclcpp::get_logger("force_plugin"), "Link [%s] not found in model [%s]", bodyName.c_str(),
@@ -60,18 +61,27 @@ namespace force_plugin
   // frequency is determined by world sdf variable: max_step_size (which is of 0.004 = 250Hz at the moment of implem)
   void ForcePlugin::PreUpdate(const gz::sim::UpdateInfo & /*info*/, gz::sim::EntityComponentManager &ecm)
   {
-    auto linVelComp = ecm.Component<gz::sim::components::LinearVelocityCmd>(baseLinkEntity_);
-    auto angVelComp = ecm.Component<gz::sim::components::AngularVelocityCmd>(baseLinkEntity_);
-
-    if(linVelComp && angVelComp)
+    if(ecm.EntityHasComponentType(gz::sim::components::ExternalWorldWrenchCmd::typeId, baseLinkEntity_))
       {
-        linVelComp->Data().Set(force_.X(), force_.Y(), force_.Z());
-        angVelComp->Data().Set(torque_.X(), torque_.Y(), torque_.Z());
+        auto wrenchComp = ecm.Component<gz::sim::components::ExternalWorldWrenchCmd>(baseLinkEntity_);
+        wrenchComp->Data().mutable_force()->set_x(force_.X());
+        wrenchComp->Data().mutable_force()->set_y(force_.Y());
+        wrenchComp->Data().mutable_force()->set_z(force_.Z());
+        wrenchComp->Data().mutable_torque()->set_x(torque_.X());
+        wrenchComp->Data().mutable_torque()->set_y(torque_.Y());
+        wrenchComp->Data().mutable_torque()->set_z(torque_.Z());
       }
     else
       {
-        // ecm.CreateComponent(baseLinkEntity_, gz::sim::components::LinearVelocityCmd(force_));
-        // ecm.CreateComponent(baseLinkEntity_, gz::sim::components::AngularVelocityCmd(torque_));
+        gz::msgs::Wrench wrenchMsg;
+        wrenchMsg.mutable_force()->set_x(force_.X());
+        wrenchMsg.mutable_force()->set_y(force_.Y());
+        wrenchMsg.mutable_force()->set_z(force_.Z());
+        wrenchMsg.mutable_torque()->set_x(torque_.X());
+        wrenchMsg.mutable_torque()->set_y(torque_.Y());
+        wrenchMsg.mutable_torque()->set_z(torque_.Z());
+
+        ecm.CreateComponent(baseLinkEntity_, gz::sim::components::ExternalWorldWrenchCmd(wrenchMsg));
       }
   }
 
