@@ -2,7 +2,7 @@
 #define FORCE_PLUGIN_HPP
 
 #include <gz/sim/System.hh>
-#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/wrench.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <thread>
 
@@ -19,12 +19,14 @@ namespace force_plugin
     void PreUpdate(const gz::sim::UpdateInfo &info, gz::sim::EntityComponentManager &ecm) override;
 
   private:
-    void OnTwistMsg(const geometry_msgs::msg::TwistStamped::SharedPtr msg);
+    void OnWrenchMsg(const geometry_msgs::msg::Wrench::SharedPtr msg);
 
     rclcpp::Node::SharedPtr node_;
-    rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr sub_;
+    rclcpp::Subscription<geometry_msgs::msg::Wrench>::SharedPtr sub_;
     gz::sim::Entity baseLinkEntity_;
-    double forceX_, forceY_, torqueZ_;
+    gz::math::Vector3d force_;
+    gz::math::Vector3d torque_;
+    // double forceX_, forceY_, forceZ_, torqueX_, torqueY_, torqueZ_;
     std::thread rclcpp_thread_;
   };
 }

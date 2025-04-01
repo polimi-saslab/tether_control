@@ -11,7 +11,7 @@ GZ_ADD_PLUGIN(force_plugin::ForcePlugin, gz::sim::System, gz::sim::ISystemConfig
 
 namespace force_plugin
 {
-  ForcePlugin::ForcePlugin() : forceX_(0), forceY_(0), torqueZ_(0) {}
+  ForcePlugin::ForcePlugin() : force_(0, 0, 0), torque_(0, 0, 0) {}
 
   ForcePlugin::~ForcePlugin()
   {
@@ -24,11 +24,18 @@ namespace force_plugin
   {
     auto model = gz::sim::Model(entity);
 
+    // if ros2 not initialised then init it
+    if(!rclcpp::ok())
+      {
+        rclcpp::init(0, nullptr);
+      }
+
     // Read body name from SDF
     std::string bodyName = "base_link";
     if(sdf->HasElement("bodyName"))
       bodyName = sdf->Get<std::string>("bodyName");
 
+    RCLCPP_INFO(rclcpp::get_logger("force_plugin"), "ForcePlugin: bodyName = %s", bodyName.c_str());
     baseLinkEntity_ = model.LinkByName(ecm, bodyName);
     if(!baseLinkEntity_)
       {
@@ -38,18 +45,19 @@ namespace force_plugin
       }
 
     // Read topic name from SDF
-    std::string cmdTopic = "cmd_vel";
-    if(sdf->HasElement("cmdTopic"))
-      cmdTopic = sdf->Get<std::string>("cmdTopic");
+    std::string tetherForceTopic = "cmd_vel";
+    if(sdf->HasElement("tetherForceTopic"))
+      tetherForceTopic = sdf->Get<std::string>("tetherForceTopic");
 
     node_ = std::make_shared<rclcpp::Node>("force_plugin");
-    sub_ = node_->create_subscription<geometry_msgs::msg::TwistStamped>(
-      cmdTopic, 10, std::bind(&ForcePlugin::OnTwistMsg, this, std::placeholders::_1));
+    sub_ = node_->create_subscription<geometry_msgs::msg::Wrench>(
+      tetherForceTopic, 10, std::bind(&ForcePlugin::OnWrenchMsg, this, std::placeholders::_1));
 
     // Create a separate thread to spin the ROS node
     rclcpp_thread_ = std::thread([this]() { rclcpp::spin(node_); });
   }
 
+  // frequency is determined by world sdf variable: max_step_size
   void ForcePlugin::PreUpdate(const gz::sim::UpdateInfo & /*info*/, gz::sim::EntityComponentManager &ecm)
   {
     auto linVelComp = ecm.Component<gz::sim::components::LinearVelocityCmd>(baseLinkEntity_);
@@ -57,22 +65,23 @@ namespace force_plugin
 
     if(linVelComp && angVelComp)
       {
-        linVelComp->Data().Set(forceX_, forceY_, 0);
-        angVelComp->Data().Set(0, 0, torqueZ_);
+        linVelComp->Data().Set(force_.X(), force_.Y(), force_.Z());
+        angVelComp->Data().Set(torque_.X(), torque_.Y(), torque_.Z());
       }
     else
       {
-        ecm.CreateComponent(baseLinkEntity_,
-                            gz::sim::components::LinearVelocityCmd(gz::math::Vector3d(forceX_, forceY_, 0)));
-        ecm.CreateComponent(baseLinkEntity_,
-                            gz::sim::components::AngularVelocityCmd(gz::math::Vector3d(0, 0, torqueZ_)));
+        ecm.CreateComponent(baseLinkEntity_, gz::sim::components::LinearVelocityCmd(force_));
+        ecm.CreateComponent(baseLinkEntity_, gz::sim::components::AngularVelocityCmd(torque_));
       }
   }
 
-  void ForcePlugin::OnTwistMsg(const geometry_msgs::msg::TwistStamped::SharedPtr msg)
+  void ForcePlugin::OnWrenchMsg(const geometry_msgs::msg::Wrench::SharedPtr msg)
   {
-    forceX_ = msg->twist.linear.x;
-    forceY_ = msg->twist.linear.y;
-    torqueZ_ = msg->twist.angular.z;
+    // Store force and torque directly in Vector3d
+    force_.Set(msg->force.x, msg->force.y, msg->force.z);
+    torque_.Set(msg->torque.x, msg->torque.y, msg->torque.z);
+
+    RCLCPP_INFO(node_->get_logger(), "Received Wrench - Force: [%f, %f, %f], Torque: [%f, %f, %f]", force_.X(),
+                force_.Y(), force_.Z(), torque_.X(), torque_.Y(), torque_.Z());
   }
 }
