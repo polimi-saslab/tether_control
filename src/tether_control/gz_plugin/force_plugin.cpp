@@ -1,12 +1,12 @@
 #include "force_plugin/force_plugin.hpp"
 #include <gz/plugin/Register.hh>
-#include <gz/sim/components/Link.hh>
-#include <gz/sim/components/LinearVelocityCmd.hh>
-#include <gz/sim/components/AngularVelocityCmd.hh>
 #include <gz/sim/Model.hh>
+#include <gz/sim/components/AngularVelocityCmd.hh>
+#include <gz/sim/components/ExternalWorldWrenchCmd.hh>
+#include <gz/sim/components/LinearVelocityCmd.hh>
+#include <gz/sim/components/Link.hh>
 #include <gz/transport/Node.hh>
 #include <rclcpp/rclcpp.hpp>
-#include <gz/sim/components/ExternalWorldWrenchCmd.hh>
 
 GZ_ADD_PLUGIN(force_plugin::ForcePlugin, gz::sim::System, gz::sim::ISystemConfigure, gz::sim::ISystemPreUpdate)
 

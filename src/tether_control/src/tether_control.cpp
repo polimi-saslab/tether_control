@@ -44,25 +44,33 @@ using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace px4_msgs::msg;
 
+#define GPS_POS_ACCEPT_RANGE 0.1f // [m] acceptable range for GPS position
+
 namespace tether_control
 {
   TetherControl::TetherControl(const std::string &nodeName) : Node(nodeName)
   {
+    // Init publishers
     offboard_control_mode_publisher_ = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
     trajectory_setpoint_publisher_ = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
     vehicle_command_publisher_ = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
     actuators_motors_pub = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
     attitude_pub_ = this->create_publisher<VehicleAttitudeSetpoint>("/fmu/in/vehicle_attitude_setpoint", 10);
 
+    // PX4 requires specific QoS, see
+    // https://docs.px4.io/main/en/ros2/user_guide.html#compatibility-issues
     rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
 
+    // Init subscribers
     vehicle_status_sub = this->create_subscription<VehicleStatus>(
       "/fmu/out/vehicle_status_v1", qos, std::bind(&TetherControl::vehicleStatusSubCb, this, std::placeholders::_1));
-
     vehicle_local_position_sub = this->create_subscription<VehicleLocalPosition>(
       "/fmu/out/vehicle_local_position", qos,
       std::bind(&TetherControl::vehicleLocalPositionSubCb, this, std::placeholders::_1));
+    vehicle_tether_force_sub = this->create_subscription<geometry_msgs::msg::Wrench>(
+      "/tether/drone_joint/ForceTorque", qos,
+      std::bind(&TetherControl::vehicleTetherForceSubCb, this, std::placeholders::_1));
 
     offboard_setpoint_counter_ = 0;
 
@@ -83,7 +91,7 @@ namespace tether_control
         {
           return;
         }
-      if(!this->is_at_init_pos)
+      if(!this->is_init_pos)
         {
           RCLCPP_INFO(this->get_logger(), "Going to initial position");
           publishOffboardControlMode({true, false, false, false, false});
@@ -111,7 +119,8 @@ namespace tether_control
           // Thrust to hover (~9.81 m/s² in gravity, but depends on vehicle tuning)
           Eigen::Vector4d controller_output;
           float droneThrust = 0.73;
-          controller_output << 0.0, 0.0, 0.0, droneThrust; // Need to control thrust for hovering
+          controller_output << 0.0, 0.0, 0.0,
+            droneThrust; // TODO: control thrust for hovering, wrt cable tensile force
 
           // Publish the setpoint
           publishOffboardControlMode({false, false, false, true, false});
@@ -287,10 +296,21 @@ namespace tether_control
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
     this->local_pos_latest = msg;
-    if((msg.z <= this->starting_pos[2] + 0.1) && (msg.z >= this->starting_pos[2] - 0.1))
+    if(((msg.z <= this->starting_pos[2] + 0.1) && (msg.z >= this->starting_pos[2] - 0.1)) && (!this->is_init_pos))
       {
-        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- POSITION READY --------------");
-        this->is_at_init_pos = true;
+        RCLCPP_INFO(this->get_logger(), "-------------- POSITION READY --------------");
+        this->is_init_pos = true;
+      }
+  }
+
+  void TetherControl::vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg)
+  {
+    // storing local pos, to convert to lambda function if we don't do anything more with the sub
+    this->drone_tether_force_latest = msg;
+    if((msg.z <= this->starting_pos[2] + GPS_POS_ACCEPT_RANGE)
+       && (msg.z >= this->starting_pos[2] - GPS_POS_ACCEPT_RANGE))
+      {
+        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT TETHER FORCE SENSOR DATA --------------");
       }
   }
 

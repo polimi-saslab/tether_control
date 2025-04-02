@@ -36,7 +36,7 @@ NamespaceIndentation: All
 PenaltyExcessCharacter: 100
 PenaltyReturnTypeOnItsOwnLine: 1
 PointerAlignment: Right
-SortIncludes: false
+SortIncludes: true
 SpaceBeforeParens: Never
 SpacesInContainerLiterals: false
 Standard:        Cpp11

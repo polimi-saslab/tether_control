@@ -1,4 +1,6 @@
---- # check this link for type info: https://github.com/gazebosim/ros_gz/blob/ros2/ros_gz_bridge/README.md
+# This file is used to configure the Gazebo bridge for ROS2,
+# check this link for type info: https://github.com/gazebosim/ros_gz/blob/ros2/ros_gz_bridge/README.md
+--- 
 - ros_topic_name: /x500/sensor/GPSFix 
   gz_topic_name: /world/default/model/x500_0/link/base_link/sensor/navsat_sensor/navsat
   ros_type_name: sensor_msgs/msg/NavSatFix

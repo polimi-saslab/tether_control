@@ -36,21 +36,22 @@
  * @author Yannis Coderey <yannis.coderey@epfl.ch>
  */
 
+#include <Eigen/Core>
+#include <geometry_msgs/msg/wrench.hpp>
 #include <px4_msgs/msg/actuator_motors.hpp>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
 #include <px4_msgs/msg/trajectory_setpoint.hpp>
+#include <px4_msgs/msg/vehicle_attitude_setpoint.hpp>
 #include <px4_msgs/msg/vehicle_command.hpp>
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
-#include <px4_msgs/msg/vehicle_status.hpp>
 #include <px4_msgs/msg/vehicle_local_position.hpp>
-#include <px4_msgs/msg/vehicle_attitude_setpoint.hpp>
-#include <Eigen/Core>
+#include <px4_msgs/msg/vehicle_status.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <stdint.h>
 
+#include <chrono>
 #include <cmath>
 #include <eigen3/Eigen/Eigen>
-#include <chrono>
 #include <iostream>
 
 using namespace std::chrono;
@@ -86,7 +87,7 @@ namespace tether_control
     // Condition variables
     bool is_armed = false;
     bool prechecks_passed = false;
-    bool is_at_init_pos = false;
+    bool is_init_pos = false;
     bool is_node_alive = false;
 
     // Control variables
@@ -114,6 +115,7 @@ namespace tether_control
     // Susbcribers
     rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_sub;
     rclcpp::Subscription<VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
+    rclcpp::Subscription<geometry_msgs::msg::Wrench>::SharedPtr vehicle_tether_force_sub;
 
     // Callback functions
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);

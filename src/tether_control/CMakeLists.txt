@@ -7,11 +7,12 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(px4_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(eigen3_cmake_module REQUIRED)
-find_package(Eigen3 REQUIRED)
 
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
@@ -26,28 +27,28 @@ add_executable(tether_control_node
 )
 
 ament_target_dependencies(tether_control_node
-  rclcpp 
-  std_msgs
   Eigen3
-  px4_msgs)
+  geometry_msgs
+  px4_msgs
+  rclcpp 
+  std_msgs)
 
 install(
   DIRECTORY
-    src
-    launch
-    models
-    worlds
     config
     gz_plugin
+    launch
+    models
+    src
+    worlds
   DESTINATION
     share/${PROJECT_NAME}/
 )
 
-## GZ PLUGIN
+####################### GZ PLUGIN #######################
 find_package(gz-cmake3 REQUIRED)
 find_package(gz-plugin2 REQUIRED COMPONENTS register)
 find_package(gz-sim8 REQUIRED)
-find_package(geometry_msgs REQUIRED)
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
 gz_find_package(gz-sim8 REQUIRED)
