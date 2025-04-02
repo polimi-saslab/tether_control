@@ -115,18 +115,22 @@ namespace tether_control
       else if(this->controlMode == ControlMode::ATTITUDE_CONTROL)
         {
           RCLCPP_INFO(this->get_logger(), "Control in mode %d", this->controlMode);
-          // Define a slow yaw rotation (e.g., 0.01 rad per step)
-          double yaw_rate = 0.5; // Adjust for slower/faster rotation
-          Eigen::Quaterniond current_orientation = Eigen::Quaterniond::Identity();
 
-          // Apply a small yaw rotation per step
-          Eigen::AngleAxisd yaw_rotation(yaw_rate, Eigen::Vector3d::UnitZ());
-          Eigen::Quaterniond desired_quat = current_orientation * yaw_rotation;
-
-          // Thrust to hover (~9.81 m/s² in gravity, but depends on vehicle tuning)
           Eigen::Vector4d controller_output;
-          float controller_output << 0.0, 0.0, 0.0,
-            droneThrust; // TODO: control thrust for hovering, wrt cable tensile force
+          Eigen::Quaterniond desired_quat;
+
+          pid_controller(controller_output, desired_quat);
+          // // Define a slow yaw rotation (e.g., 0.01 rad per step)
+          // double yaw_rate = 0.5; // Adjust for slower/faster rotation
+          // Eigen::Quaterniond current_orientation = Eigen::Quaterniond::Identity();
+
+          // // Apply a small yaw rotation per step
+          // Eigen::AngleAxisd yaw_rotation(yaw_rate, Eigen::Vector3d::UnitZ());
+          // Eigen::Quaterniond desired_quat = current_orientation * yaw_rotation;
+
+          // // Thrust to hover (~9.81 m/s² in gravity, but depends on vehicle tuning)
+          // Eigen::Vector4d controller_output;
+          // float controller_output << 0.0, 0.0, 0.0, 0.73; // TODO: control thrust for hovering, wrt cable tensile force
 
           // Publish the setpoint
           publishOffboardControlMode({false, false, false, true, false});
@@ -222,25 +226,6 @@ namespace tether_control
     vehicle_command_publisher_->publish(msg);
   }
 
-  /**
-   * @brief Publish vehicle commands
-   * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
-   * @param param1    Command parameter 1
-   * @param param2    Command parameter 2
-   */
-  void TetherControl::updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands)
-  {
-    px4_msgs::msg::ActuatorMotors act_motors{};
-    for(int i = 0; i < kMaxNumMotors; ++i)
-      {
-        act_motors.control[i] = motor_commands(i);
-      }
-    act_motors.timestamp = 0; // Let PX4 set the timestamp
-    act_motors.reversible_flags = 0;
-
-    actuators_motors_pub->publish(act_motors);
-  }
-
   void TetherControl::publishAttitudeSetpoint(const Eigen::Vector4d &controller_output,
                                               const Eigen::Quaterniond &desired_quat)
   {
@@ -309,6 +294,27 @@ namespace tether_control
     RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT TETHER FORCE SENSOR DATA --------------");
     RCLCPP_INFO_ONCE(this->get_logger(), "Force: %f %f %f, Torque: %f %f %f", msg.force.x, msg.force.y, msg.force.z,
                      msg.torque.x, msg.torque.y, msg.torque.z);
+  }
+
+  // Controllers
+
+  void TetherControl::updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands)
+  {
+    px4_msgs::msg::ActuatorMotors act_motors{};
+    for(int i = 0; i < kMaxNumMotors; ++i)
+      {
+        act_motors.control[i] = motor_commands(i);
+      }
+    act_motors.timestamp = 0; // Let PX4 set the timestamp
+    act_motors.reversible_flags = 0;
+
+    actuators_motors_pub->publish(act_motors);
+  }
+
+  void TetherControl::pid_controller(Eigen::Vector4d &controller_output, Eigen::Quaterniond &desired_quat)
+  {
+    RCLCPP_INFO_ONCE(this->get_logger(), "Got tether force sensor data");
+    // Eigen::Quaterniond current_orientation = this->local_pos_latest;
   }
 
 } // namespace tether_control

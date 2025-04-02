@@ -24,3 +24,9 @@
   ros_type_name: geometry_msgs/msg/Wrench
   gz_type_name: gz.msgs.Wrench
   direction: GZ_TO_ROS
+
+- ros_topic_name: /drone/imu0
+  gz_topic_name: /world/default/model/tethered_lin_0/link/base_link/sensor/imu_sensor/imu
+  ros_type_name: sensor_msgs/msg/Imu
+  gz_type_name: gz.msgs.IMU
+  direction: GZ_TO_ROS

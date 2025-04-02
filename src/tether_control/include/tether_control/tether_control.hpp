@@ -101,7 +101,7 @@ namespace tether_control
     std::vector<float> starting_pos = {0.0f, 0.0f, -1.0f};
 
     // PX4 subscription data
-    VehicleLocalPosition local_pos_latest;
+    VehicleLocalPosition local_pos_latest; // @todo Fused local position in NED, just need to stock important var imo
     geometry_msgs::msg::Wrench drone_tether_force_latest;
 
     // ROS2 Publishers
@@ -129,6 +129,7 @@ namespace tether_control
 
     // Controller functions
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
+    void pid_controller(Eigen::Vector4d &controller_output, Eigen::Quaterniond &desired_quat);
 
     // Utils
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
