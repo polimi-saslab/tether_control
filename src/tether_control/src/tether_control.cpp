@@ -44,8 +44,6 @@ using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace px4_msgs::msg;
 
-#define GPS_POS_ACCEPT_RANGE 0.1f // [m] acceptable range for GPS position
-
 namespace tether_control
 {
   TetherControl::TetherControl(const std::string &nodeName) : Node(nodeName)
@@ -72,8 +70,6 @@ namespace tether_control
       "/tether/drone_joint/ForceTorque", qos,
       std::bind(&TetherControl::vehicleTetherForceSubCb, this, std::placeholders::_1));
 
-    offboard_setpoint_counter_ = 0;
-
     auto alive_timer_callback = [this]() -> void {
       if(this->is_node_alive)
         {
@@ -91,7 +87,18 @@ namespace tether_control
         {
           return;
         }
-      if(!this->is_init_pos)
+      if(!this->is_armed && this->prechecks_passed) // drone alive, ready but not yet armed
+        {
+          this->publishVehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
+
+          this->arm();
+          this->is_armed = true;
+        }
+      else // drone is armed but prechecks not passed
+        {
+          return;
+        }
+      if(!this->is_init_pos) // is alive, armed but not in position
         {
           RCLCPP_INFO(this->get_logger(), "Going to initial position");
           publishOffboardControlMode({true, false, false, false, false});
@@ -118,30 +125,19 @@ namespace tether_control
 
           // Thrust to hover (~9.81 m/s² in gravity, but depends on vehicle tuning)
           Eigen::Vector4d controller_output;
-          float droneThrust = 0.73;
-          controller_output << 0.0, 0.0, 0.0,
+          float controller_output << 0.0, 0.0, 0.0,
             droneThrust; // TODO: control thrust for hovering, wrt cable tensile force
 
           // Publish the setpoint
           publishOffboardControlMode({false, false, false, true, false});
           publishAttitudeSetpoint(controller_output, desired_quat);
         }
-      // update_motors();
-      // doesn't work when already armed, for iterative commands
-      if(!this->is_armed && this->prechecks_passed)
+      else
         {
-          // Change to Offboard mode after 10 setpoints
-          this->publishVehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
-
-          // Arm the vehicle
-          this->arm();
-          this->is_armed = true;
-        }
-
-      // stop the counter after reaching 11
-      if(offboard_setpoint_counter_ < 11)
-        {
-          offboard_setpoint_counter_++;
+          RCLCPP_ERROR(this->get_logger(), "Unknown control mode, defaulting to ATTITUDE_CONTROL");
+          this->controlMode = ControlMode::ATTITUDE_CONTROL;
+          publishOffboardControlMode({false, false, false, true, false});
+          publishAttitudeSetpoint(Eigen::Vector4d::Zero(), Eigen::Quaterniond::Identity());
         }
     };
     timer_ = this->create_wall_timer(10ms, timer_callback);
@@ -299,6 +295,7 @@ namespace tether_control
     if(((msg.z <= this->starting_pos[2] + 0.1) && (msg.z >= this->starting_pos[2] - 0.1)) && (!this->is_init_pos))
       {
         RCLCPP_INFO(this->get_logger(), "-------------- POSITION READY --------------");
+        RCLCPP_INFO(this->get_logger(), "Drone position: %f %f %f", msg.x, msg.y, msg.z);
         this->is_init_pos = true;
       }
   }
@@ -307,11 +304,11 @@ namespace tether_control
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
     this->drone_tether_force_latest = msg;
-    if((msg.z <= this->starting_pos[2] + GPS_POS_ACCEPT_RANGE)
-       && (msg.z >= this->starting_pos[2] - GPS_POS_ACCEPT_RANGE))
-      {
-        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT TETHER FORCE SENSOR DATA --------------");
-      }
+
+    // plotting once just for info
+    RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT TETHER FORCE SENSOR DATA --------------");
+    RCLCPP_INFO_ONCE(this->get_logger(), "Force: %f %f %f, Torque: %f %f %f", msg.force.x, msg.force.y, msg.force.z,
+                     msg.torque.x, msg.torque.y, msg.torque.z);
   }
 
 } // namespace tether_control

@@ -58,6 +58,9 @@ using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace px4_msgs::msg;
 
+#define GPS_POS_ACCEPT_RANGE 0.1f // [m] acceptable range for GPS position
+#define MC_HOVER_THRUST 0.73f     // [N] thrust to be applied to drone to hover, determined by simulation
+
 namespace tether_control
 {
   class TetherControl : public rclcpp::Node
@@ -65,7 +68,7 @@ namespace tether_control
   public:
     explicit TetherControl(const std::string &nodeName);
 
-    static constexpr int kMaxNumMotors = px4_msgs::msg::ActuatorMotors::NUM_CONTROLS;
+    static constexpr int kMaxNumMotors = px4_msgs::msg::ActuatorMotors::NUM_CONTROLS; // 12
 
     void arm();
     void disarm();
@@ -89,6 +92,7 @@ namespace tether_control
     bool prechecks_passed = false;
     bool is_init_pos = false;
     bool is_node_alive = false;
+    float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover
 
     // Control variables
     uint8_t controlMode = ControlMode::ATTITUDE_CONTROL; // default to attitude control for the moment
@@ -98,6 +102,7 @@ namespace tether_control
 
     // PX4 subscription data
     VehicleLocalPosition local_pos_latest;
+    geometry_msgs::msg::Wrench drone_tether_force_latest;
 
     // ROS2 Publishers
     rclcpp::Publisher<OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
@@ -120,14 +125,16 @@ namespace tether_control
     // Callback functions
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
+    void vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg);
 
-    std::atomic<uint64_t> timestamp_;    //!< common synced timestamped
-    uint64_t offboard_setpoint_counter_; //!< counter for the number of setpoints sent
-
+    // Controller functions
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
 
     // Utils
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
+
+    // Others
+    std::atomic<uint64_t> timestamp_; //!< common synced timestamped
   };
 
 } // namespace tether_control
