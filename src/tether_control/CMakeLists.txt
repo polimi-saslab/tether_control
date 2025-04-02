@@ -22,6 +22,7 @@ include_directories(
 add_executable(tether_control_node
   src/main.cpp
   src/tether_control.cpp
+  src/utils.cpp
 )
 
 ament_target_dependencies(tether_control_node

@@ -31,11 +31,9 @@
  ****************************************************************************/
 
 /**
- * @brief Offboard control example
- * @file offboard_control.cpp
- * @addtogroup examples
- * @author Mickey Cowden <info@cowden.tech>
- * @author Nuno Marques <nuno.marques@dronesolutions.io>
+ * @brief First offboard control implementation for TO/LD control of tethered drone
+ * @file tether_control.hpp
+ * @author Yannis Coderey <yannis.coderey@epfl.ch>
  */
 
 #include <px4_msgs/msg/actuator_motors.hpp>
@@ -49,8 +47,9 @@
 #include <Eigen/Core>
 #include <rclcpp/rclcpp.hpp>
 #include <stdint.h>
-#include <tether_control/control.h>
 
+#include <cmath>
+#include <eigen3/Eigen/Eigen>
 #include <chrono>
 #include <iostream>
 
@@ -124,6 +123,9 @@ namespace tether_control
     uint64_t offboard_setpoint_counter_; //!< counter for the number of setpoints sent
 
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
+
+    // Utils
+    Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
   };
 
 } // namespace tether_control

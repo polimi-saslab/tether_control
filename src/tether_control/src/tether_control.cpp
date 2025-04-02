@@ -271,13 +271,13 @@ namespace tether_control
     this->is_node_alive = true; // -> means VehicleStatus topic is being published hence we have a drone alive
     if(msg.pre_flight_checks_pass)
       {
-        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Pre-flight checks passed --------------");
+        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- PREFLIGHT CHECKS PASSED --------------");
         this->prechecks_passed = true;
         last_status = true;
       }
     else if((last_status) && (!msg.pre_flight_checks_pass)) // should not happen theoretically
       {
-        RCLCPP_INFO(this->get_logger(), "PREFLIGHT CHECKS NO LONGER PASS");
+        RCLCPP_INFO(this->get_logger(), "-------------- PREFLIGHT CHECKS NO LONGER PASS--------------");
         this->prechecks_passed = false;
         last_status = false;
       }
@@ -289,7 +289,7 @@ namespace tether_control
     this->local_pos_latest = msg;
     if((msg.z <= this->starting_pos[2] + 0.1) && (msg.z >= this->starting_pos[2] - 0.1))
       {
-        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- Position ready --------------");
+        RCLCPP_INFO_ONCE(this->get_logger(), "-------------- POSITION READY --------------");
         this->is_at_init_pos = true;
       }
   }
