@@ -12,21 +12,12 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
-# find_package(rmw REQUIRED)
-# find_package(geometry_msgs REQUIRED)
 
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
 include_directories(
   include 
   SYSTEM ${Eigen3_INCLUDE_DIRS})
-
-# add_library(apply_force_plugin SHARED src/apply_force_plugin.cpp)
-# set_property(TARGET apply_force_plugin PROPERTY CXX_STANDARD 17)
-# target_link_libraries(apply_force_plugin
-#   PRIVATE gz-plugin${GZ_PLUGIN_VER}::gz-plugin${GZ_PLUGIN_VER}
-#   PRIVATE gz-sim8::gz-sim8
-#   ${rclcpp_LIBRARIES})
 
 add_executable(tether_control_node
   src/main.cpp
