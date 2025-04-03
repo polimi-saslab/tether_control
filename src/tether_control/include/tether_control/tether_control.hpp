@@ -47,6 +47,7 @@
 #include <px4_msgs/msg/vehicle_local_position.hpp>
 #include <px4_msgs/msg/vehicle_status.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <stdint.h>
 
 #include <chrono>
@@ -101,15 +102,16 @@ namespace tether_control
     std::vector<float> starting_pos = {0.0f, 0.0f, -1.0f};
 
     // PX4 subscription data
-    VehicleLocalPosition local_pos_latest; // @todo Fused local position in NED, just need to stock important var imo
+    px4_msgs::msg::VehicleLocalPosition local_pos_latest; // @todo: just need to stock important var imo
     geometry_msgs::msg::Wrench drone_tether_force_latest;
+    sensor_msgs::msg::Imu drone_imu_latest;
 
     // ROS2 Publishers
-    rclcpp::Publisher<OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
-    rclcpp::Publisher<TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
-    rclcpp::Publisher<VehicleAttitudeSetpoint>::SharedPtr attitude_pub_;
-    rclcpp::Publisher<VehicleCommand>::SharedPtr vehicle_command_publisher_;
-    rclcpp::Publisher<ActuatorMotors>::SharedPtr actuators_motors_pub;
+    rclcpp::Publisher<px4_msgs::msg::OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
+    rclcpp::Publisher<px4_msgs::msg::TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
+    rclcpp::Publisher<px4_msgs::msg::VehicleAttitudeSetpoint>::SharedPtr attitude_pub_;
+    rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_publisher_;
+    rclcpp::Publisher<px4_msgs::msg::ActuatorMotors>::SharedPtr actuators_motors_pub;
 
     // Publish functions
     void publishOffboardControlMode(const std::vector<bool> &control_modes);
@@ -119,12 +121,14 @@ namespace tether_control
 
     // Susbcribers
     rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_sub;
-    rclcpp::Subscription<VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
+    rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
     rclcpp::Subscription<geometry_msgs::msg::Wrench>::SharedPtr vehicle_tether_force_sub;
+    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr drone_imu_sub;
 
     // Callback functions
-    void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
+    void droneImuSubCb(const sensor_msgs::msg::Imu msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
+    void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
     void vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg);
 
     // Controller functions
