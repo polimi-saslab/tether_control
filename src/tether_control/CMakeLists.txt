@@ -38,9 +38,7 @@ install(
     config
     gz_plugin
     launch
-    models
     src
-    worlds
   DESTINATION
     share/${PROJECT_NAME}/
 )
