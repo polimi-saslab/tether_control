@@ -332,6 +332,19 @@ namespace tether_control
     RCLCPP_INFO_ONCE(this->get_logger(), "Controller output: %f, %f, %f, %f, desired quat: %f, %f, %f, %f",
                      controller_output[0], controller_output[1], controller_output[2], controller_output[3],
                      desired_quat.w(), desired_quat.x(), desired_quat.y(), desired_quat.z());
+
+    sensor_msgs::msg::Imu imu_msg = this->drone_imu_latest;
+
+    geometry_msgs::msg::Quaternion orientation = imu_msg.orientation;
+    double cur_pitch = get_pitch_from_imu(orientation);
+    double desired_pitch = 0.0;
+    double error = desired_pitch - cur_pitch;
+    double Ts = 0.01;
+    // Eigen::Vector3d angular_velocity(imu_msg.angular_velocity.x, imu_msg.angular_velocity.y,
+    //                                  imu_msg.angular_velocity.z);
+    // Eigen::Vector3d linear_acceleration(imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y,
+    //                                     imu_msg.linear_acceleration.z);
+
     // // Define a slow yaw rotation (e.g., 0.01 rad per step)
     // double yaw_rate = 0.5; // Adjust for slower/faster rotation
     // Eigen::Quaterniond current_orientation = Eigen::Quaterniond::Identity();

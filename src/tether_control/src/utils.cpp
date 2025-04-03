@@ -24,5 +24,14 @@ namespace tether_control
                                            * Eigen::AngleAxisd(euler_2.x(), Eigen::Vector3d::UnitX()));
 
     return (NED_ENU_Q * quat_in) * AIRCRAFT_BASELINK_Q;
+
+    double TetherControl::get_pitch_from_imu(const geometry_msgs::msg::Quaternion &quat)
+    {
+      tf2::Quaternion q(quat.x, quat.y, quat.z, quat.w);
+      tf2::Matrix3x3 mat(q);
+      double roll, pitch, yaw;
+      mat.getRPY(roll, pitch, yaw);  // Extract Euler angles
+      return pitch * (180.0 / M_PI); // Convert to degrees
+    }
   }
 } // namespace tether_control

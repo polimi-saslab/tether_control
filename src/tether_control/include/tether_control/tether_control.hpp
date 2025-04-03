@@ -93,6 +93,8 @@ namespace tether_control
     bool prechecks_passed = false;
     bool is_init_pos = false;
     bool is_node_alive = false;
+
+    // Random variables
     float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover
 
     // Control variables
@@ -137,6 +139,7 @@ namespace tether_control
 
     // Utils
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
+    double get_pitch_from_imu(const geometry_msgs::msg::Quaternion &quat);
 
     // Others
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped
