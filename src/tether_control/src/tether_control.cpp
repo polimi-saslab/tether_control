@@ -46,9 +46,18 @@ namespace tether_control
 {
   TetherControl::TetherControl(const std::string &nodeName) : Node(nodeName)
   {
+    RCLCPP_INFO(this->get_logger(), "################# TETHER CONTROL NODE INITIALIZING #################");
+
     // Init parameters
-    this->attThrustKp = this->declare_parameter<float>("Kp", 1.0f);
+    this->hoverThrust = this->declare_parameter<float>("hoverThrust", 0.73f);
+    this->attThrustKp = this->declare_parameter<float>("attThrustKp", 0.5f);
+    this->attThrustKd = this->declare_parameter<float>("attThrustKd", 0.05f);
+
+    RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
+    RCLCPP_INFO(this->get_logger(), "hoverThrust value: %f", this->hoverThrust);
     RCLCPP_INFO(this->get_logger(), "Kp value: %f", this->attThrustKp);
+    RCLCPP_INFO(this->get_logger(), "Kd value: %f", this->attThrustKd);
+    RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
     // Init publishers
     offboard_control_mode_publisher_ = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
@@ -145,6 +154,8 @@ namespace tether_control
     };
     timer_ = this->create_wall_timer(10ms, timer_callback);
     alive_timer_ = this->create_wall_timer(1000ms, alive_timer_callback);
+
+    RCLCPP_INFO(this->get_logger(), "################# TETHER CONTROL NODE INITIALIZED #################");
   }
 
   ////////////////////////////////////// PX4 publish functions //////////////////////////////////////
@@ -337,15 +348,17 @@ namespace tether_control
 
     // geometry_msgs::msg::Quaternion orientation = imu_msg.orientation;
     float cur_accel_z = imu_msg.linear_acceleration.z;
-    float er_accel_z = 10.0f - cur_accel_z; // gz imu includes gravity
+    float er_accel_z = this->hoverThrust - cur_accel_z; // gz imu includes gravity
+    float er_d_accel_z = 11.0f - cur_accel_z;           // gz imu includes gravity
 
-    float base_thrust = 0.75f;   // estimated hover thrust
+    float base_thrust = 0.7f;    // estimated hover thrust
     float max_adjustment = 0.3f; // how much you allow PID to push
-    // Kp gain is tuned for error range of ~10
-    float adjustment = std::clamp(this->attThrustKp * er_accel_z, -max_adjustment, max_adjustment);
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "Thrust adjustment: %f", adjustment);
+    float kpAdjustment = std::clamp(this->attThrustKp * er_accel_z, -max_adjustment, max_adjustment);
+    float kdAdjustment = std::clamp(this->attThrustKd * er_d_accel_z, -max_adjustment, max_adjustment);
     float thrust = base_thrust + adjustment;
     thrust = std::clamp(thrust, 0.0f, 1.0f); // normalize it
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
+                         "Accel z error: %f, Thrust adjustment: %f, Thrust %f", er_accel_z, adjustment, thrust);
 
     controller_output[3] = thrust;
   }

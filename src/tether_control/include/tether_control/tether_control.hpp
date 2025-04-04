@@ -101,7 +101,9 @@ namespace tether_control
     bool is_node_alive = false;
 
     // Parameters
-    float attThrustKp = 1.0;
+    float attThrustKp = 0.5;
+    float attThrustKd = 0.05;
+    float hoverThrust = 0.73f; // [N] thrust to be applied to drone to hover, determined by simulation
 
     // Random variables
     float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover
