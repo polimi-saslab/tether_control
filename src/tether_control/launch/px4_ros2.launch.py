@@ -65,9 +65,6 @@ def launch_setup(context, *args, **kwargs):
     )
 
     return [
-        # file_server2_node,
-        # gazebo_node,
-        # spawn_entity,
         udp_process,
         px4_process,
         gazebo_bridge_node,

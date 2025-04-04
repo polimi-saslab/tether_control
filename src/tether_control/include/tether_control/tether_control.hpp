@@ -33,7 +33,7 @@
 /**
  * @brief First offboard control implementation for TO/LD control of tethered drone
  * @file tether_control.hpp
- * @author Yannis Coderey <yannis.coderey@epfl.ch>
+ * @author Yannis Coderey <yannis09@yahoo.fr>
  */
 
 #include <Eigen/Core>
@@ -48,6 +48,9 @@
 #include <px4_msgs/msg/vehicle_status.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.h>
+
 #include <stdint.h>
 
 #include <chrono>
@@ -61,6 +64,9 @@ using namespace px4_msgs::msg;
 
 #define GPS_POS_ACCEPT_RANGE 0.1f // [m] acceptable range for GPS position
 #define MC_HOVER_THRUST 0.73f     // [N] thrust to be applied to drone to hover, determined by simulation
+#define X500_MASS = 2.0f + 4 * 0.016076923076923075f // [kg] mass of the drone + 4 motors
+#define HOVER_FORCE = X500_MASS * 9.81f // [N] force to be applied to drone to hover, determined by simulation
+#define LOG_THROTTLE_FREQ 2500          // [Hz] frequency at which to log throttle values
 
 namespace tether_control
 {
@@ -93,6 +99,9 @@ namespace tether_control
     bool prechecks_passed = false;
     bool is_init_pos = false;
     bool is_node_alive = false;
+
+    // Parameters
+    float attThrustKp = 1.0;
 
     // Random variables
     float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover

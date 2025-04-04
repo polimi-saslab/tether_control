@@ -14,6 +14,7 @@ find_package(px4_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
@@ -33,7 +34,8 @@ ament_target_dependencies(tether_control_node
   px4_msgs
   rclcpp 
   sensor_msgs
-  std_msgs)
+  std_msgs
+  tf2)
 
 install(
   DIRECTORY
