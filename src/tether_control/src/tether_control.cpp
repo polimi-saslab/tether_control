@@ -49,14 +49,16 @@ namespace tether_control
     RCLCPP_INFO(this->get_logger(), "################# TETHER CONTROL NODE INITIALIZING #################");
 
     // Init parameters
-    this->hoverThrust = this->declare_parameter<float>("hoverThrust", 0.73f);
+    this->hoverThrust = this->declare_parameter<float>("hoverThrust", 0.7f);
+    this->gravComp = this->declare_parameter<float>("gravComp", 9.81f);
     this->attThrustKp = this->declare_parameter<float>("attThrustKp", 0.5f);
     this->attThrustKd = this->declare_parameter<float>("attThrustKd", 0.05f);
 
     RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
-    RCLCPP_INFO(this->get_logger(), "hoverThrust value: %f", this->hoverThrust);
-    RCLCPP_INFO(this->get_logger(), "Kp value: %f", this->attThrustKp);
-    RCLCPP_INFO(this->get_logger(), "Kd value: %f", this->attThrustKd);
+    RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
+    RCLCPP_INFO(this->get_logger(), "gravComp: %f", this->gravComp);
+    RCLCPP_INFO(this->get_logger(), "Kp: %f", this->attThrustKp);
+    RCLCPP_INFO(this->get_logger(), "Kd: %f", this->attThrustKd);
     RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
     // Init publishers
@@ -118,9 +120,17 @@ namespace tether_control
       // drone armed
       if(!this->is_init_pos) // is alive, armed but not in position
         {
-          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Going to initial position");
-          publishOffboardControlMode({true, false, false, false, false});
-          publishTrajectorySetpoint();
+          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode %d",
+                               this->controlMode);
+          publishOffboardControlMode({false, false, false, false, true});
+          // 0.75 is T/O value for x500
+          updateMotors({0.74, 0.74, 0.74, 0.74, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
+                        std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1")});
+          // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ,
+          //                      "Going to initial position: [%f, %f, %f]", this->starting_pos[0],
+          //                      this->starting_pos[1], this->starting_pos[2]);
+          // publishOffboardControlMode({true, false, false, false, false});
+          // publishTrajectorySetpoint();
         }
       else if(this->controlMode == ControlMode::DIRECT_ACTUATORS)
         {
@@ -128,8 +138,9 @@ namespace tether_control
                                this->controlMode);
           publishOffboardControlMode({false, false, false, false, true});
           // 0.75 is T/O value for x500
-          updateMotors({0.75, 0.75, 0.75, 0.75, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
-                        std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1")});
+          updateMotors({this->hoverThrust, this->hoverThrust, this->hoverThrust, this->hoverThrust, std::nanf("1"),
+                        std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
+                        std::nanf("1")});
         }
       else if(this->controlMode == ControlMode::ATTITUDE_CONTROL)
         {
@@ -137,9 +148,14 @@ namespace tether_control
                                this->controlMode);
 
           Eigen::Vector4d controller_output;
+          controller_outpt[3] = 0.8f; // thrust
           Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
 
-          pid_controller(controller_output, desired_quat);
+          // pidController(controller_output, desired_quat);
+          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                               "Controller output: %f, %f, %f, %f, desired quat: %f, %f, %f, %f", controller_output[0],
+                               controller_output[1], controller_output[2], controller_output[3], desired_quat.w(),
+                               desired_quat.x(), desired_quat.y(), desired_quat.z());
           publishOffboardControlMode({false, false, false, true, false});
           publishAttitudeSetpoint(controller_output, desired_quat);
         }
@@ -211,8 +227,8 @@ namespace tether_control
   void TetherControl::publishTrajectorySetpoint()
   {
     TrajectorySetpoint msg{};
-    msg.position = {0.0, 0.0, -1.0};
-    msg.yaw = -3.14; // [-PI:PI]
+    msg.position = {0.0, 0.0, -0.5};
+    msg.yaw = -3.14;
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     trajectory_setpoint_publisher_->publish(msg);
   }
@@ -271,12 +287,20 @@ namespace tether_control
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
     this->local_pos_latest = msg;
-    if(((msg.z <= this->starting_pos[2] + 0.1) && (msg.z >= this->starting_pos[2] - 0.1)) && (!this->is_init_pos))
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Drone position: [%f, %f, %f]", msg.x, msg.y,
+                         msg.z);
+    if((msg.z >= 0.8) && (!this->is_init_pos))
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- POSITION READY --------------");
-        RCLCPP_INFO(this->get_logger(), "Drone position: %f %f %f", msg.x, msg.y, msg.z);
         this->is_init_pos = true;
       }
+    // if(((msg.x <= this->starting_pos[0] + 0.1) && (msg.x >= this->starting_pos[1] - 0.1))
+    //    && ((msg.y <= this->starting_pos[1] + 0.1) && (msg.y >= this->starting_pos[1] - 0.1))
+    //    && ((msg.z <= this->starting_pos[2] + 0.1) && (msg.z >= this->starting_pos[2] - 0.1)) && (!this->is_init_pos))
+    //   {
+    //     RCLCPP_INFO_ONCE(this->get_logger(), "-------------- POSITION READY --------------");
+    //     this->is_init_pos = true;
+    //   }
   }
 
   void TetherControl::vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg)
@@ -315,11 +339,12 @@ namespace tether_control
 
     // plotting once just for info
     RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT IMU DATA --------------");
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-                         "Orientation: %f %f %f %f, angular velocity: %f %f %f, lin_accel: %f %f %f", msg.orientation.w,
-                         msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.angular_velocity.x,
-                         msg.angular_velocity.y, msg.angular_velocity.z, msg.linear_acceleration.x,
-                         msg.linear_acceleration.y, msg.linear_acceleration.z);
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "ACCEL Z IMU: %f ", msg.linear_acceleration.z);
+    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
+    //  "Orientation: %f %f %f %f, angular velocity: %f %f %f, lin_accel: %f %f %f", msg.orientation.w,
+    //  msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.angular_velocity.x,
+    //  msg.angular_velocity.y, msg.angular_velocity.z, msg.linear_acceleration.x,
+    //  msg.linear_acceleration.y, msg.linear_acceleration.z);
   }
 
   ////////////////////////////////////// Control functions //////////////////////////////////////
@@ -336,31 +361,44 @@ namespace tether_control
     actuators_motors_pub->publish(act_motors);
   }
 
-  void TetherControl::pid_controller(Eigen::Vector4d &controller_output, Eigen::Quaterniond &desired_quat)
+  // @todo: create class for PID controller, cleaner
+  void TetherControl::pidController(Eigen::Vector4d &controller_output) //, Eigen::Quaterniond &desired_quat
   {
     RCLCPP_INFO_ONCE(this->get_logger(), "Got tether force sensor data");
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-                         "Controller output: %f, %f, %f, %f, desired quat: %f, %f, %f, %f", controller_output[0],
-                         controller_output[1], controller_output[2], controller_output[3], desired_quat.w(),
-                         desired_quat.x(), desired_quat.y(), desired_quat.z());
 
     sensor_msgs::msg::Imu imu_msg = this->drone_imu_latest;
+    // Extract the orientation quaternion
+    geometry_msgs::msg::Quaternion orientation = imu_msg.orientation;
+    tf2::Quaternion q(orientation.x, orientation.y, orientation.z, orientation.w);
+    // Convert linear acceleration to tf2 Vector3
+    tf2::Vector3 accel_body(imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y,
+                            imu_msg.linear_acceleration.z);
+    // Rotate to world frame
+    tf2::Matrix3x3 R(q);
+    tf2::Vector3 accel_world = R * accel_body;
+    float t_s = 0.01f;
 
     // geometry_msgs::msg::Quaternion orientation = imu_msg.orientation;
-    float cur_accel_z = imu_msg.linear_acceleration.z;
-    float er_accel_z = this->hoverThrust - cur_accel_z; // gz imu includes gravity
-    float er_d_accel_z = 11.0f - cur_accel_z;           // gz imu includes gravity
+    float cur_accel_z_world = accel_world.getZ();
+    float cur_er_accel_z = this->gravComp - cur_accel_z_world; // gz imu includes gravity
+    if(this->last_er_accel_z == 0.0f)                          // first time we get the data
+      {
+        this->last_er_accel_z = cur_er_accel_z;
+      }
 
-    float base_thrust = 0.7f;    // estimated hover thrust
-    float max_adjustment = 0.3f; // how much you allow PID to push
-    float kpAdjustment = std::clamp(this->attThrustKp * er_accel_z, -max_adjustment, max_adjustment);
-    float kdAdjustment = std::clamp(this->attThrustKd * er_d_accel_z, -max_adjustment, max_adjustment);
-    float thrust = base_thrust + adjustment;
+    float cur_er_d_accel_z = (cur_er_accel_z - this->last_er_accel_z) / t_s; // derivative of error
+
+    float max_adjustment = 0.15f; // how much you allow PID to push
+    float kp_adjustment = std::clamp(this->attThrustKp * cur_er_accel_z, -max_adjustment, max_adjustment);
+    float kd_adjustment = std::clamp(this->attThrustKd * cur_er_d_accel_z, -max_adjustment, max_adjustment);
+    float thrust = this->hoverThrust + kp_adjustment + kd_adjustment;
     thrust = std::clamp(thrust, 0.0f, 1.0f); // normalize it
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
-                         "Accel z error: %f, Thrust adjustment: %f, Thrust %f", er_accel_z, adjustment, thrust);
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Accel z error: %f, Kp adjustment: %f, Thrust %f",
+                         cur_er_accel_z, kp_adjustment, thrust);
 
     controller_output[3] = thrust;
+
+    this->last_er_accel_z = cur_er_accel_z; // update error
   }
 
 } // namespace tether_control

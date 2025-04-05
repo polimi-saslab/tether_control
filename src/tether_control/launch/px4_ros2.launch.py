@@ -48,25 +48,25 @@ def launch_setup(context, *args, **kwargs):
         output='screen'
     )
 
-    # offboard_node = Node(
-    #     package='tether_control',
-    #     executable='offboard_control_node',
-    #     output='screen'
-    # )
+    offboard_node = Node(
+        package='tether_control',
+        executable='tether_control_node',
+        output='screen'
+    )
 
     udp_process = ExecuteProcess(
             cmd=['MicroXRCEAgent', 'udp4', '-p', '8888'],
             output='screen')
 
-    px4_process = ExecuteProcess(
-        cmd=['make', 'px4_sitl', 'gz_tethered_lin'],
-        cwd='/home/yannis/Sas_lab/PX4-Autopilot',
-        output='screen'
-    )
+    # px4_process = ExecuteProcess(
+    #     cmd=['make', 'px4_sitl', 'gz_tethered_lin'],
+    #     cwd='/home/yannis/Sas_lab/PX4-Autopilot',
+    #     output='screen'
+    # )
 
     return [
         udp_process,
-        px4_process,
+        # px4_process,
         gazebo_bridge_node,
-        # offboard_node
+        offboard_node
     ]

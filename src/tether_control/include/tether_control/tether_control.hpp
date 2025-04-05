@@ -101,9 +101,10 @@ namespace tether_control
     bool is_node_alive = false;
 
     // Parameters
+    float hoverThrust = 0.73f; // [N] thrust to be applied to drone to hover, determined by simulation
+    float gravComp = 9.81f;
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;
-    float hoverThrust = 0.73f; // [N] thrust to be applied to drone to hover, determined by simulation
 
     // Random variables
     float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover
@@ -113,6 +114,7 @@ namespace tether_control
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
     std::vector<float> starting_pos = {0.0f, 0.0f, -1.0f};
+    float last_er_accel_z = 0.0f;
 
     // PX4 subscription data
     px4_msgs::msg::VehicleLocalPosition local_pos_latest; // @todo: just need to stock important var imo
@@ -146,7 +148,7 @@ namespace tether_control
 
     // Controller functions
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
-    void pid_controller(Eigen::Vector4d &controller_output, Eigen::Quaterniond &desired_quat);
+    void pidController(Eigen::Vector4d &controller_output); //, Eigen::Quaterniond &desired_quat
 
     // Utils
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
