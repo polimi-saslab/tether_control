@@ -37,6 +37,7 @@
  */
 
 #include "geometry_msgs/msg/wrench_stamped.hpp"
+#include "std_msgs/msg/u_int8_multi_array.hpp"
 #include <Eigen/Core>
 #include <geometry_msgs/msg/wrench.hpp>
 #include <px4_msgs/msg/actuator_motors.hpp>
@@ -142,6 +143,7 @@ namespace tether_control
     void publishVehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void publishAttitudeSetpoint(const Eigen::Vector4d &controller_output, const Eigen::Quaterniond &desired_quat);
     void publishTetherForceDisturbations();
+
     // Susbcribers
     rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_sub;
     rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;

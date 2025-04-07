@@ -37,6 +37,7 @@
  */
 
 #include "geometry_msgs/msg/wrench_stamped.hpp"
+#include "std_msgs/msg/u_int8_multi_array.hpp"
 #include <rclcpp/rclcpp.hpp>
 
 namespace tether_model
@@ -49,12 +50,20 @@ namespace tether_model
   private:
     // Timers
     rclcpp::TimerBase::SharedPtr timer_alive_;
+    rclcpp::TimerBase::SharedPtr timer_;
 
     // Condition variables
     bool is_node_alive = false;
+    std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
 
     // ROS2 Publishers
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
+
+    // Susbcribers
+    rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr sim_status_sub;
+
+    // Callback functions
+    void simStatusSubCb(const std_msgs::msg::UInt8MultiArray msg);
   };
 
 } // namespace tether_model
