@@ -49,6 +49,14 @@ namespace tether_model
   public:
     explicit TetherModel(const std::string &nodeName);
 
+    enum class DisturbationMode
+    {
+      NONE,
+      STRONG_SIDE,
+      CIRCULAR,
+      CUSTOM
+    };
+
   private:
     // Timers
     rclcpp::TimerBase::SharedPtr timer_alive_;
@@ -57,6 +65,7 @@ namespace tether_model
     // Condition variables
     bool is_node_alive = true; // always alive
     std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
+    DisturbationMode disturb_mode_ = DisturbationMode::STRONG_SIDE;
 
     // ROS2 Publishers
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;

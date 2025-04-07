@@ -159,7 +159,7 @@ namespace tether_control
                                this->controlMode);
           publishOffboardControlMode({true, false, false, false, false});
           publishTrajectorySetpoint();
-          publishTetherForceDisturbations();
+          // publishTetherForceDisturbations(); // published by tether model node
         }
       else
         {

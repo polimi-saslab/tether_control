@@ -41,16 +41,18 @@ namespace tether_model
         {
           if(sim_status[0] == 0)
             {
-              RCLCPP_INFO(this->get_logger(), "Waiting for simulation mode to be set");
+              RCLCPP_INFO_ONCE(this->get_logger(), "Waiting for simulation mode to be set");
+              publishTetherForceDisturbations();
             }
           else
             {
               RCLCPP_INFO(this->get_logger(), "ALIVE");
+              publishTetherForceDisturbations();
             }
         }
     };
 
-    timer_ = this->create_wall_timer(100ms, timer_callback);
+    timer_ = this->create_wall_timer(50ms, timer_callback);
     timer_alive_ = this->create_wall_timer(1000ms, timer_alive_callback);
 
     RCLCPP_INFO(this->get_logger(), "################# TETHER MODEL NODE INITIALIZED #################");
@@ -64,29 +66,43 @@ namespace tether_model
 
   void TetherModel::publishTetherForceDisturbations()
   {
-    static double theta = 0.0; // angle for circular motion
-    double radius = 3.0;       // radius of the circle (i.e., force magnitude in XY)
-    double d_theta = 0.1;      // increment angle each call (controls speed)
-
     geometry_msgs::msg::WrenchStamped msg;
 
     msg.header.stamp = this->now();
     msg.header.frame_id = "base_link";
+    if(this->disturb_mode_ == DisturbationMode::CIRCULAR)
+      {
+        static double theta = 0.0; // angle for circular motion
+        double radius = 1.5;       // radius of the circle (i.e., force magnitude in XY)
+        double d_theta = 0.01;     // increment angle each call (controls speed)
 
-    msg.wrench.force.x = radius * std::cos(theta);
-    msg.wrench.force.y = radius * std::sin(theta);
-    msg.wrench.force.z = -5.0; // Constant downward force
-    msg.wrench.torque.x = 0.0;
-    msg.wrench.torque.y = 0.0;
-    msg.wrench.torque.z = 0.0;
+        msg.wrench.force.x = radius * std::cos(theta);
+        msg.wrench.force.y = radius * std::sin(theta);
+        msg.wrench.force.z = -5.0; // Constant downward force
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
 
-    theta += d_theta;
-    if(theta > 2 * M_PI)
-      theta -= 2 * M_PI;
+        theta += d_theta;
+        if(theta > 2 * M_PI)
+          theta -= 2 * M_PI;
+      }
+    else if(this->disturb_mode_ == DisturbationMode::STRONG_SIDE)
+      {
+        msg.wrench.force.x = -2.0;
+        msg.wrench.force.y = -2.0;
+        msg.wrench.force.z = -2.0;
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
+      }
+    else
+      {
+        RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), LOG_THROTTLE, "Disturbation mode not defined");
+      }
 
     RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), LOG_THROTTLE, "Publishing tether forces [%f, %f, %f]",
                          msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
-
     this->tether_force_pub_->publish(msg);
   }
 
