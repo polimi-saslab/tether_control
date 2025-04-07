@@ -40,6 +40,8 @@
 #include "std_msgs/msg/u_int8_multi_array.hpp"
 #include <rclcpp/rclcpp.hpp>
 
+#define LOG_THROTTLE 1000
+
 namespace tether_model
 {
   class TetherModel : public rclcpp::Node
@@ -53,11 +55,14 @@ namespace tether_model
     rclcpp::TimerBase::SharedPtr timer_;
 
     // Condition variables
-    bool is_node_alive = false;
+    bool is_node_alive = true; // always alive
     std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
 
     // ROS2 Publishers
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
+
+    // Publish functions
+    void publishTetherForceDisturbations();
 
     // Susbcribers
     rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr sim_status_sub;

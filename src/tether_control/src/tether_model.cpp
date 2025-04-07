@@ -50,7 +50,7 @@ namespace tether_model
         }
     };
 
-    timer_ = this->create_wall_timer(10ms, timer_callback);
+    timer_ = this->create_wall_timer(100ms, timer_callback);
     timer_alive_ = this->create_wall_timer(1000ms, timer_alive_callback);
 
     RCLCPP_INFO(this->get_logger(), "################# TETHER MODEL NODE INITIALIZED #################");
@@ -60,6 +60,34 @@ namespace tether_model
   {
     this->sim_status = msg.data;
     RCLCPP_INFO_ONCE(this->get_logger(), "Received Sim Status %d", this->sim_status[0]);
+  }
+
+  void TetherModel::publishTetherForceDisturbations()
+  {
+    static double theta = 0.0; // angle for circular motion
+    double radius = 3.0;       // radius of the circle (i.e., force magnitude in XY)
+    double d_theta = 0.1;      // increment angle each call (controls speed)
+
+    geometry_msgs::msg::WrenchStamped msg;
+
+    msg.header.stamp = this->now();
+    msg.header.frame_id = "base_link";
+
+    msg.wrench.force.x = radius * std::cos(theta);
+    msg.wrench.force.y = radius * std::sin(theta);
+    msg.wrench.force.z = -5.0; // Constant downward force
+    msg.wrench.torque.x = 0.0;
+    msg.wrench.torque.y = 0.0;
+    msg.wrench.torque.z = 0.0;
+
+    theta += d_theta;
+    if(theta > 2 * M_PI)
+      theta -= 2 * M_PI;
+
+    RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), LOG_THROTTLE, "Publishing tether forces [%f, %f, %f]",
+                         msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
+
+    this->tether_force_pub_->publish(msg);
   }
 
 } // namespace tether_model
