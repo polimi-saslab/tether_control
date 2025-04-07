@@ -5,7 +5,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -15,18 +14,20 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
-find_package(visualization_msgs REQUIRED)
-
-set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
 include_directories(
   include 
   SYSTEM ${Eigen3_INCLUDE_DIRS})
 
+set(TETHER_CONTROL_SOURCES
+  src/TetherControl/tether_control.cpp
+  src/TetherControl/utils.cpp
+  src/TetherControl/callbacks.cpp
+)
+
 add_executable(tether_control_node
   src/main.cpp
-  src/tether_control.cpp
-  src/utils.cpp
+  ${TETHER_CONTROL_SOURCES}
 )
 
 ament_target_dependencies(tether_control_node
@@ -37,6 +38,23 @@ ament_target_dependencies(tether_control_node
   sensor_msgs
   std_msgs
   tf2)
+
+####################### TETHER MODEL #######################
+
+add_executable(tether_model_node
+  src/tether_model.cpp
+)
+
+ament_target_dependencies(tether_model_node
+  Eigen3
+  geometry_msgs
+  px4_msgs
+  rclcpp 
+  sensor_msgs
+  std_msgs
+  tf2)
+
+  #########################################################
 
 install(
   DIRECTORY
@@ -73,7 +91,6 @@ ament_target_dependencies(
   force_plugin PUBLIC
   geometry_msgs
   rclcpp
-  visualization_msgs
 )
 
 target_link_libraries(force_plugin PUBLIC
@@ -91,6 +108,7 @@ install(
 install(
   TARGETS
   tether_control_node
+  tether_model_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
