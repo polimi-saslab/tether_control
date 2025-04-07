@@ -8,19 +8,25 @@
   gz_type_name: gz.msgs.Clock
   direction: GZ_TO_ROS
 
-- ros_topic_name: /tether/drone_joint/ForceTorque
-  gz_topic_name: /tether/drone_joint/ForceTorque
+- ros_topic_name: /tether_lin/base_link/ForceTorque #/tether_lin/base_link/ForceTorque
+  gz_topic_name: /tether_lin/base_link/ForceTorque
   ros_type_name: geometry_msgs/msg/Wrench
   gz_type_name: gz.msgs.Wrench
   direction: GZ_TO_ROS
 
-- ros_topic_name: /drone/imu0
+- ros_topic_name: /tether/imu0
   gz_topic_name: /world/default/model/tethered_lin_0/link/base_link/sensor/imu_sensor/imu
   ros_type_name: sensor_msgs/msg/Imu
   gz_type_name: gz.msgs.IMU
   direction: GZ_TO_ROS
 
-- ros_topic_name: /x5drone00/sensor/GPSFix 
+- ros_topic_name: /drone/imu0
+  gz_topic_name: /world/default/model/x500_0/link/base_link/sensor/imu_sensor/imu
+  ros_type_name: sensor_msgs/msg/Imu
+  gz_type_name: gz.msgs.IMU
+  direction: GZ_TO_ROS
+
+- ros_topic_name: /x500/sensor/GPSFix 
   gz_topic_name: /world/default/model/x500_0/link/base_link/sensor/navsat_sensor/navsat
   ros_type_name: sensor_msgs/msg/NavSatFix
   gz_type_name: gz.msgs.NavSat

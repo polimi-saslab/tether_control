@@ -36,6 +36,7 @@
  * @author Yannis Coderey <yannis09@yahoo.fr>
  */
 
+#include "geometry_msgs/msg/wrench_stamped.hpp"
 #include <Eigen/Core>
 #include <geometry_msgs/msg/wrench.hpp>
 #include <px4_msgs/msg/actuator_motors.hpp>
@@ -86,7 +87,8 @@ namespace tether_control
       VELOCITY_CONTROL = 1,
       ACCELERATION_CONTROL = 2,
       ATTITUDE_CONTROL = 3,
-      DIRECT_ACTUATORS = 4
+      DIRECT_ACTUATORS = 4,
+      TETHER_FORCE_REACTIONS = 5
     };
 
   private:
@@ -110,11 +112,15 @@ namespace tether_control
     float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover
 
     // Control variables
-    uint8_t controlMode = ControlMode::ATTITUDE_CONTROL; // default to attitude control for the moment
+    uint8_t controlMode = ControlMode::TETHER_FORCE_REACTIONS; // default to attitude control for the moment
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
     std::vector<float> starting_pos = {0.0f, 0.0f, -1.0f};
     float last_er_accel_z = 0.0f;
+
+    // variables for tether force reactions mode
+    size_t counter_ = 0;
+    size_t counter_time = 0;
 
     // PX4 subscription data
     px4_msgs::msg::VehicleLocalPosition local_pos_latest; // @todo: just need to stock important var imo
@@ -127,13 +133,15 @@ namespace tether_control
     rclcpp::Publisher<px4_msgs::msg::VehicleAttitudeSetpoint>::SharedPtr attitude_pub_;
     rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_publisher_;
     rclcpp::Publisher<px4_msgs::msg::ActuatorMotors>::SharedPtr actuators_motors_pub;
+    rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
 
     // Publish functions
     void publishOffboardControlMode(const std::vector<bool> &control_modes);
     void publishTrajectorySetpoint();
+    void publishTrajectorySetpointVel();
     void publishVehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void publishAttitudeSetpoint(const Eigen::Vector4d &controller_output, const Eigen::Quaterniond &desired_quat);
-
+    void publishTetherForceDisturbations();
     // Susbcribers
     rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_sub;
     rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;

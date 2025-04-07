@@ -67,6 +67,7 @@ namespace tether_control
     vehicle_command_publisher_ = this->create_publisher<VehicleCommand>("/fmu/in/vehicle_command", 10);
     actuators_motors_pub = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
     attitude_pub_ = this->create_publisher<VehicleAttitudeSetpoint>("/fmu/in/vehicle_attitude_setpoint", 10);
+    tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
 
     // PX4 requires specific QoS, see
     // https://docs.px4.io/main/en/ros2/user_guide.html#compatibility-issues
@@ -80,10 +81,10 @@ namespace tether_control
       "/fmu/out/vehicle_local_position", qos,
       std::bind(&TetherControl::vehicleLocalPositionSubCb, this, std::placeholders::_1));
     vehicle_tether_force_sub = this->create_subscription<geometry_msgs::msg::Wrench>(
-      "/tether/drone_joint/ForceTorque", qos,
+      "/tether_lin/base_link/ForceTorque", qos,
       std::bind(&TetherControl::vehicleTetherForceSubCb, this, std::placeholders::_1));
     drone_imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(
-      "/drone/imu0", qos, std::bind(&TetherControl::droneImuSubCb, this, std::placeholders::_1));
+      "/tether/imu0", qos, std::bind(&TetherControl::droneImuSubCb, this, std::placeholders::_1));
 
     auto alive_timer_callback = [this]() -> void {
       if(this->is_node_alive)
@@ -122,14 +123,6 @@ namespace tether_control
         {
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode %d",
                                this->controlMode);
-          // publishOffboardControlMode({false, false, false, false, true});
-          // 0.75 is T/O value for x500
-          // updateMotors({0.74, 0.74, 0.74, 0.74, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
-          // std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1")
-          // });
-          // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ,
-          //                      "Going to initial position: [%f, %f, %f]", this->starting_pos[0],
-          //                      this->starting_pos[1], this->starting_pos[2]);
           publishOffboardControlMode({true, false, false, false, false});
           publishTrajectorySetpoint();
         }
@@ -159,6 +152,14 @@ namespace tether_control
                                desired_quat.x(), desired_quat.y(), desired_quat.z());
           publishOffboardControlMode({false, false, false, true, false});
           publishAttitudeSetpoint(controller_output, desired_quat);
+        }
+      else if(this->controlMode == ControlMode::TETHER_FORCE_REACTIONS)
+        {
+          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode %d",
+                               this->controlMode);
+          publishOffboardControlMode({true, false, false, false, false});
+          publishTrajectorySetpoint();
+          publishTetherForceDisturbations();
         }
       else
         {
@@ -228,7 +229,7 @@ namespace tether_control
   void TetherControl::publishTrajectorySetpoint()
   {
     TrajectorySetpoint msg{};
-    msg.position = {0.0, 0.0, -0.5};
+    msg.position = {0.0, 0.0, -1.0};
     msg.yaw = -3.14;
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     trajectory_setpoint_publisher_->publish(msg);
@@ -290,10 +291,10 @@ namespace tether_control
     this->local_pos_latest = msg;
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Drone position: [%f, %f, %f]", msg.x, msg.y,
                          msg.z);
-    if((msg.z >= 0.8) && (!this->is_init_pos))
+    if((msg.z <= -1.0) && (!this->is_init_pos))
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- POSITION READY --------------");
-        // this->is_init_pos = true;
+        this->is_init_pos = true;
       }
     // if(((msg.x <= this->starting_pos[0] + 0.1) && (msg.x >= this->starting_pos[1] - 0.1))
     //    && ((msg.y <= this->starting_pos[1] + 0.1) && (msg.y >= this->starting_pos[1] - 0.1))
@@ -340,7 +341,7 @@ namespace tether_control
 
     // plotting once just for info
     RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT IMU DATA --------------");
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500, "ACCEL Z IMU: %f ", msg.linear_acceleration.z);
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "ACCEL Z IMU: %f ", msg.linear_acceleration.z);
     // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
     //  "Orientation: %f %f %f %f, angular velocity: %f %f %f, lin_accel: %f %f %f", msg.orientation.w,
     //  msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.angular_velocity.x,
@@ -400,6 +401,53 @@ namespace tether_control
     controller_output[3] = thrust;
 
     this->last_er_accel_z = cur_er_accel_z; // update error
+  }
+
+  void TetherControl::publishTetherForceDisturbations()
+  {
+    geometry_msgs::msg::WrenchStamped msg;
+
+    msg.header.stamp = this->now();
+    msg.header.frame_id = "base_link";
+
+    switch(counter_ % 4)
+      {
+      case 0:
+        msg.wrench.force.x = -7.0;
+        msg.wrench.force.y = 0.0;
+        msg.wrench.force.z = -3.0;
+        RCLCPP_INFO_ONCE(this->get_logger(), "Publishing tether force in %f %f %f", msg.wrench.force.x,
+                         msg.wrench.force.y, msg.wrench.force.z);
+        counter_time++;
+        break;
+      case 1:
+        msg.wrench.force.x = 0.0;
+        msg.wrench.force.y = -5.0;
+        msg.wrench.force.z = -2.0;
+        RCLCPP_INFO_ONCE(this->get_logger(), "Publishing tether force in %f %f %f", msg.wrench.force.x,
+                         msg.wrench.force.y, msg.wrench.force.z);
+        counter_time++;
+        break;
+      case 2:
+        msg.wrench.force.x = 0.0;
+        msg.wrench.force.y = 0.0;
+        msg.wrench.force.z = -3.0;
+        RCLCPP_INFO_ONCE(this->get_logger(), "Publishing tether force in %f %f %f", msg.wrench.force.x,
+                         msg.wrench.force.y, msg.wrench.force.z);
+        counter_time++;
+        break;
+      case 3:
+        msg.wrench.force.x = -4.0;
+        msg.wrench.force.y = -4.0;
+        msg.wrench.force.z = -4.0;
+        RCLCPP_INFO_ONCE(this->get_logger(), "Publishing tether force in %f %f %f", msg.wrench.force.x,
+                         msg.wrench.force.y, msg.wrench.force.z);
+        counter_time++;
+        break;
+      }
+    if((counter_time % 500) == 0)
+      counter_++;
+    tether_force_pub_->publish(msg);
   }
 
 } // namespace tether_control
