@@ -122,15 +122,16 @@ namespace tether_control
         {
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode %d",
                                this->controlMode);
-          publishOffboardControlMode({false, false, false, false, true});
+          // publishOffboardControlMode({false, false, false, false, true});
           // 0.75 is T/O value for x500
-          updateMotors({0.74, 0.74, 0.74, 0.74, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
-                        std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1")});
+          // updateMotors({0.74, 0.74, 0.74, 0.74, std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
+          // std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1")
+          // });
           // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ,
           //                      "Going to initial position: [%f, %f, %f]", this->starting_pos[0],
           //                      this->starting_pos[1], this->starting_pos[2]);
-          // publishOffboardControlMode({true, false, false, false, false});
-          // publishTrajectorySetpoint();
+          publishOffboardControlMode({true, false, false, false, false});
+          publishTrajectorySetpoint();
         }
       else if(this->controlMode == ControlMode::DIRECT_ACTUATORS)
         {
@@ -148,7 +149,7 @@ namespace tether_control
                                this->controlMode);
 
           Eigen::Vector4d controller_output;
-          controller_outpt[3] = 0.8f; // thrust
+          controller_output[3] = 0.8f; // thrust
           Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
 
           // pidController(controller_output, desired_quat);
@@ -292,7 +293,7 @@ namespace tether_control
     if((msg.z >= 0.8) && (!this->is_init_pos))
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- POSITION READY --------------");
-        this->is_init_pos = true;
+        // this->is_init_pos = true;
       }
     // if(((msg.x <= this->starting_pos[0] + 0.1) && (msg.x >= this->starting_pos[1] - 0.1))
     //    && ((msg.y <= this->starting_pos[1] + 0.1) && (msg.y >= this->starting_pos[1] - 0.1))

@@ -1,4 +1,5 @@
 #include "force_plugin/force_plugin.hpp"
+#include "geometry_msgs/msg/wrench_stamped.hpp"
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/components/AngularVelocityCmd.hh>
@@ -51,7 +52,7 @@ namespace force_plugin
       tetherForceTopic = sdf->Get<std::string>("tetherForceTopic");
 
     node_ = std::make_shared<rclcpp::Node>("force_plugin");
-    sub_ = node_->create_subscription<geometry_msgs::msg::Wrench>(
+    sub_ = node_->create_subscription<geometry_msgs::msg::WrenchStamped>(
       tetherForceTopic, 10, std::bind(&ForcePlugin::OnWrenchMsg, this, std::placeholders::_1));
 
     // Create a separate thread to spin the ROS node
@@ -85,10 +86,10 @@ namespace force_plugin
       }
   }
 
-  void ForcePlugin::OnWrenchMsg(const geometry_msgs::msg::Wrench::SharedPtr msg)
+  void ForcePlugin::OnWrenchMsg(const geometry_msgs::msg::WrenchStamped::SharedPtr msg)
   {
     // Store force and torque directly in Vector3d
-    force_.Set(msg->force.x, msg->force.y, msg->force.z);
-    torque_.Set(msg->torque.x, msg->torque.y, msg->torque.z);
+    force_.Set(msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z);
+    torque_.Set(msg->wrench.torque.x, msg->wrench.torque.y, msg->wrench.torque.z);
   }
 }

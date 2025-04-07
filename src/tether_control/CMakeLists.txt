@@ -15,6 +15,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
@@ -72,6 +73,7 @@ ament_target_dependencies(
   force_plugin PUBLIC
   geometry_msgs
   rclcpp
+  visualization_msgs
 )
 
 target_link_libraries(force_plugin PUBLIC
