@@ -65,7 +65,7 @@ namespace tether_model
     // Condition variables
     bool is_node_alive = true; // always alive
     std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
-    DisturbationMode disturb_mode_ = DisturbationMode::STRONG_SIDE;
+    DisturbationMode disturb_mode_ = DisturbationMode::STRONG_SIDE; // to set manually
 
     // ROS2 Publishers
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
@@ -78,6 +78,8 @@ namespace tether_model
 
     // Callback functions
     void simStatusSubCb(const std_msgs::msg::UInt8MultiArray msg);
+
+    void setParams();
   };
 
 } // namespace tether_model

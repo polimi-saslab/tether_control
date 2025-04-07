@@ -10,47 +10,58 @@ from tempfile import NamedTemporaryFile
 
 def generate_launch_description():
     # Declare launch arguments
-    # urdf_file_arg = DeclareLaunchArgument('urdf_file', default_value='custom_r2d2.urdf', description='URDF file name')
-    bridge_config_file_arg = DeclareLaunchArgument('bridge_config_file', default_value='gazebo_bridge.yaml', description='Bridge config file name')
+    bridge_config_path_arg = DeclareLaunchArgument('bridge_config_file', default_value='gazebo_bridge.yaml', description='Bridge config file path')
     package_name_arg = DeclareLaunchArgument('package_name', default_value='tether_control', description='Package name containing URDF file')
-    # gazebo_world_arg = DeclareLaunchArgument('gazebo_world', default_value='gazebo_simulation_scene2_world.sdf', description='Gazebo world file name')
-
+    tether_modlel_config_path_arg = DeclareLaunchArgument('model_config_file', default_value='tether_model.yaml', description='Tether model config file path')
 
     return LaunchDescription([
-        # urdf_file_arg,
-        bridge_config_file_arg,
         package_name_arg,
-        # gazebo_world_arg,
+        bridge_config_path_arg,
+        tether_modlel_config_path_arg,
         OpaqueFunction(function=launch_setup)
     ])
 
 def launch_setup(context, *args, **kwargs):
-    # urdf_file = LaunchConfiguration('urdf_file').perform(context)
     bridge_config_file = LaunchConfiguration('bridge_config_file').perform(context)
-    # gazebo_world_file = LaunchConfiguration('gazebo_world').perform(context)
+    model_config_file = LaunchConfiguration('model_Config_file').perform(context)
     package_name = LaunchConfiguration('package_name').perform(context)
 
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
-    bridge_config_file_path = os.path.join(
+    bridge_config_path = os.path.join(
         get_package_share_directory(package_name),
         "config",
         bridge_config_file
+    )
+
+    model_config_path = os.path.join(
+        get_package_share_directory(package_name),
+        "config",
+        model_config_file
     )
 
     gazebo_bridge_node = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
         parameters=[{
-            'config_file': bridge_config_file_path,
+            'config_file': bridge_config_path,
             'use_sim_time': True  # Add this line to enable simulation time
         }],
         output='screen'
     )
 
-    offboard_node = Node(
+    tether_control_node = Node(
         package='tether_control',
         executable='tether_control_node',
+        output='screen'
+    )
+
+    tether_model_node = Node(
+        package='tether_control',
+        executable='tether_model_node',
+        parameters=[{
+            'config_file': tether_model_config_path
+        }],
         output='screen'
     )
 
@@ -68,5 +79,5 @@ def launch_setup(context, *args, **kwargs):
         udp_process,
         # px4_process,
         gazebo_bridge_node,
-        offboard_node
+        tether_control_node
     ]

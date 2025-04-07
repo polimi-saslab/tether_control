@@ -8,6 +8,12 @@ namespace tether_model
   {
     RCLCPP_INFO(this->get_logger(), "################# TETHER MODEL NODE INITIALIZING #################");
 
+    // RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
+
+    // RCLCPP_INFO(this->get_logger(), "disturbation_mode: %s", this->disturb_mode_);
+
+    // RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
+
     // Init publishers
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
 

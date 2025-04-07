@@ -1,0 +1,3 @@
+tether_model_node:
+  ros__parameters:
+    disturbation_mode: "strong_side"
