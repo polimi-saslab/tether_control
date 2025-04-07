@@ -23,6 +23,9 @@ namespace tether_model
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
 
     // Init subscribers
+    vehicle_local_position_sub = this->create_subscription<px4_msgs::msg::VehicleLocalPosition>(
+      "/fmu/out/vehicle_local_position", qos,
+      std::bind(&TetherModel::vehicleLocalPositionSubCb, this, std::placeholders::_1));
     sim_status_sub = this->create_subscription<std_msgs::msg::UInt8MultiArray>(
       "/tether_control/sim_status", qos, std::bind(&TetherModel::simStatusSubCb, this, std::placeholders::_1));
 
@@ -110,6 +113,16 @@ namespace tether_model
     RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), LOG_THROTTLE, "Publishing tether forces [%f, %f, %f]",
                          msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
     this->tether_force_pub_->publish(msg);
+  }
+
+  void TetherModel::vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg)
+  {
+    this->local_pos_latest = msg;
+    RCLCPP_INFO_ONCE(this->get_logger(), "Received vehicle local position");
+    this->dist_gs_drone = std::sqrt(
+      std::pow(msg.x, 2) + std::pow(msg.y, 2)
+      + std::pow(msg.z, 2)); // [m] distance between drone and ground station, NED frame but doesn't matter here
+    RCLCPP_INFO(this->get_logger(), "Distance between drone and ground station: %f", this->dist_gs_drone);
   }
 
 } // namespace tether_model

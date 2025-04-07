@@ -12,7 +12,7 @@ def generate_launch_description():
     # Declare launch arguments
     bridge_config_path_arg = DeclareLaunchArgument('bridge_config_file', default_value='gazebo_bridge.yaml', description='Bridge config file path')
     package_name_arg = DeclareLaunchArgument('package_name', default_value='tether_control', description='Package name containing URDF file')
-    tether_modlel_config_path_arg = DeclareLaunchArgument('model_config_file', default_value='tether_model.yaml', description='Tether model config file path')
+    tether_modlel_config_path_arg = DeclareLaunchArgument('tether_model_config_file', default_value='tether_model.yaml', description='Tether model config file path')
 
     return LaunchDescription([
         package_name_arg,
@@ -23,7 +23,7 @@ def generate_launch_description():
 
 def launch_setup(context, *args, **kwargs):
     bridge_config_file = LaunchConfiguration('bridge_config_file').perform(context)
-    model_config_file = LaunchConfiguration('model_Config_file').perform(context)
+    tether_model_config_file = LaunchConfiguration('tether_model_config_file').perform(context)
     package_name = LaunchConfiguration('package_name').perform(context)
 
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
@@ -34,10 +34,10 @@ def launch_setup(context, *args, **kwargs):
         bridge_config_file
     )
 
-    model_config_path = os.path.join(
+    tether_model_config_path = os.path.join(
         get_package_share_directory(package_name),
         "config",
-        model_config_file
+        tether_model_config_file
     )
 
     gazebo_bridge_node = Node(

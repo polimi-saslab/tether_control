@@ -38,6 +38,7 @@
 
 #include "geometry_msgs/msg/wrench_stamped.hpp"
 #include "std_msgs/msg/u_int8_multi_array.hpp"
+#include <px4_msgs/msg/vehicle_local_position.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #define LOG_THROTTLE 1000
@@ -67,7 +68,8 @@ namespace tether_model
     std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
     DisturbationMode disturb_mode_ = DisturbationMode::STRONG_SIDE; // to set manually
 
-    // ROS2 Publishers
+    float dist_gs_drone = 0.0f; // [m] distance between drone and ground station
+    px4_msgs::msg::VehicleLocalPosition local_pos_latest;
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
 
     // Publish functions
@@ -75,11 +77,10 @@ namespace tether_model
 
     // Susbcribers
     rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr sim_status_sub;
-
+    rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
     // Callback functions
     void simStatusSubCb(const std_msgs::msg::UInt8MultiArray msg);
-
-    void setParams();
+    void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
   };
 
 } // namespace tether_model
