@@ -63,6 +63,18 @@ namespace tether_model
     rclcpp::TimerBase::SharedPtr timer_alive_;
     rclcpp::TimerBase::SharedPtr timer_;
 
+    // Model parameters
+    float tether_density = 0.0f;     // [kg/m^3] density of the cable
+    float tether_diameter = 0.1f;    // [m] radius of the cable
+    float tether_init_length = 0.0f; // [m] length of the cable
+    float gravity_const = 9.81f;     // [m/s^2] gravity constant
+    float tether_mass = 0.0f;        // [kg] mass of the cable
+
+    float tether_cur_length = 0.0f; // [m] current length of the cable
+    float tether_grav_force = 0.0f;
+    float tether_cur_ground_angle = 0.0f;
+    float winch_force = 0.0f;
+
     // Condition variables
     bool is_node_alive = true; // always alive
     std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};

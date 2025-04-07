@@ -11,6 +11,18 @@ namespace tether_model
     // RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
 
     // RCLCPP_INFO(this->get_logger(), "disturbation_mode: %s", this->disturb_mode_);
+    // Init parameters
+    this->tether_density = this->declare_parameter<float>("tether_density", 10.0f);
+    this->tether_diameter = this->declare_parameter<float>("tether_diameter", 0.005f);
+    this->tether_init_length = this->declare_parameter<float>("tether_init_length", 1.0f);
+    this->gravity_const = this->declare_parameter<float>("gravity_const", 9.81f);
+
+    RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
+    RCLCPP_INFO(this->get_logger(), "tether_density: %f", this->tether_density);
+    RCLCPP_INFO(this->get_logger(), "tether_diameter: %f", this->tether_diameter);
+    RCLCPP_INFO(this->get_logger(), "tether_init_length: %f", this->tether_init_length);
+    RCLCPP_INFO(this->get_logger(), "gravity_const: %f", this->gravity_const);
+    RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
     // RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
@@ -104,6 +116,21 @@ namespace tether_model
         msg.wrench.torque.x = 0.0;
         msg.wrench.torque.y = 0.0;
         msg.wrench.torque.z = 0.0;
+      }
+    else if(this->disturb_mode_ == DisturbationMode::CUSTOM)
+      {
+        this->tether_mass
+          = this->tether_density * M_PI * std::pow(this->tether_diameter / 2, 2) * this->tether_cur_length; // [kg]
+        this->tether_grav_force
+          = this->tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
+        // tether_tension_force = this->winch_force;
+        this->tether_cur_ground_angle
+          = 1 / 2
+            * (this->tether_mass * this->gravity_const * cos(this->tether_cur_ground_angle)
+               / this->winch_force); // == 1/2(M_t*g*cos(beta)/T), from eq (39) of The Influence of
+                                     // Tether Sag on Airborne Wind Energy Generation by F. Trevisi
+        RCLCPP_INFO(this->get_logger(), "Computed tether mass: %f, tether grav force: %f, tether drone angle: %f",
+                    this->tether_mass, this->tether_grav_force, this->tether_cur_ground_angle);
       }
     else
       {
