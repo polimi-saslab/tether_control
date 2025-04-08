@@ -71,7 +71,7 @@ namespace tether_model
     float gravity_const = 9.81f;     // [m/s^2] gravity constant
 
     // Model variables
-    float winch_force = 0.0f;   // [N] tension force felt by the winch
+    float winch_force = 1.0f;   // [N] tension force felt by the winch
     float dist_gs_drone = 0.0f; // [m] distance between drone and ground station
 
     float tether_cur_length = dist_gs_drone; // [m] current length of the cable, assuming straight line atm
@@ -82,7 +82,7 @@ namespace tether_model
     // Condition variables
     bool is_node_alive = true; // always alive
     std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
-    DisturbationMode disturb_mode = DisturbationMode::NONE;
+    DisturbationMode disturb_mode = DisturbationMode::TET_GRAV_FIL_ANG;
 
     px4_msgs::msg::VehicleLocalPosition local_pos_latest;
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;

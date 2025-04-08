@@ -113,7 +113,7 @@ namespace tether_control
     float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover
 
     // Control variables
-    uint8_t controlMode = ControlMode::TETHER_FORCE_REACTIONS; // default to attitude control for the moment
+    uint8_t controlMode = ControlMode::TETHER_FORCE_REACTIONS;
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
     std::vector<float> starting_pos = {0.0f, 0.0f, -1.0f};
@@ -139,7 +139,7 @@ namespace tether_control
     // Publish functions
     void publishOffboardControlMode(const std::vector<bool> &control_modes);
     void publishTrajectorySetpoint();
-    void publishTrajectorySetpointVel();
+    void publishTrajectorySetpointCircle();
     void publishVehicleCommand(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void publishAttitudeSetpoint(const Eigen::Vector4d &controller_output, const Eigen::Quaterniond &desired_quat);
     void publishTetherForceDisturbations();

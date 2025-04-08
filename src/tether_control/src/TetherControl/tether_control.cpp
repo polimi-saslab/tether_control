@@ -156,11 +156,10 @@ namespace tether_control
         }
       else if(this->controlMode == ControlMode::TETHER_FORCE_REACTIONS)
         {
-          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode %d",
-                               this->controlMode);
+          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ,
+                               "Control in mode TETHER_FORCE_REACTIONS");
           publishOffboardControlMode({true, false, false, false, false});
-          publishTrajectorySetpoint();
-          // publishTetherForceDisturbations(); // published by tether model node
+          publishTrajectorySetpointCircle();
         }
       else
         {

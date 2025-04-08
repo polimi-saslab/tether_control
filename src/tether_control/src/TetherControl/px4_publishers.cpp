@@ -104,6 +104,27 @@ namespace tether_control
     trajectory_setpoint_publisher_->publish(msg);
   }
 
+  void TetherControl::publishTrajectorySetpointCircle()
+  {
+    static float angle = 0.0f;        // radians
+    static const float radius = 1.2f; // meters
+    static const float step = 0.001f; // radians per call (adjust for speed)
+
+    // Advance angle
+    angle += step;
+    if(angle > 2 * M_PI)
+      {
+        angle -= 2 * M_PI;
+      }
+
+    TrajectorySetpoint msg{};
+    msg.position = {radius * cos(angle), radius * sin(angle), -1.0};
+    msg.yaw = -3.14;
+    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+    RCLCPP_INFO(get_logger(), "Publishing circles: [%f, %f, %f]", msg.position[0], msg.position[1], msg.position[2]);
+    trajectory_setpoint_publisher_->publish(msg);
+  }
+
   /**
    * @brief Publish vehicle commands
    * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
