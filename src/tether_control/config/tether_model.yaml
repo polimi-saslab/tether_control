@@ -1,12 +1,8 @@
-tether_model_node:
+yannis_tether_model_node:
   ros__parameters:
     tether_model:
       gravity_const: 9.81
       tether_init_length: 10.0
       tether_diameter: 0.01
-      tether_density: 970. #source: Sofia
-      # tether_stiffness: 100000.0
-      # tether_damping: 1000.0
-      # tether_max_force: 10000.0
-      # tether_min_force: 100.0
+      tether_density: 970.0 #source: Sofia
     disturbation_mode: "strong_side"

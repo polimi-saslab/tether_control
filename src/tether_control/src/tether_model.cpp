@@ -8,23 +8,20 @@ namespace tether_model
   {
     RCLCPP_INFO(this->get_logger(), "################# TETHER MODEL NODE INITIALIZING #################");
 
-    // RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
-
-    // RCLCPP_INFO(this->get_logger(), "disturbation_mode: %s", this->disturb_mode_);
     // Init parameters
-    this->tether_density = this->declare_parameter<float>("tether_density", 10.0f);
-    this->tether_diameter = this->declare_parameter<float>("tether_diameter", 0.005f);
+    this->tether_density = this->declare_parameter<float>("tether_model.tether_density", 10.0f);
+    this->tether_diameter = this->declare_parameter<float>("tether_model.tether_diameter", 0.005f);
     this->tether_init_length = this->declare_parameter<float>("tether_init_length", 1.0f);
-    this->gravity_const = this->declare_parameter<float>("gravity_const", 9.81f);
+    this->gravity_const = this->declare_parameter<float>("tether_model.gravity_const", 9.81f);
 
     RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
     RCLCPP_INFO(this->get_logger(), "tether_density: %f", this->tether_density);
     RCLCPP_INFO(this->get_logger(), "tether_diameter: %f", this->tether_diameter);
     RCLCPP_INFO(this->get_logger(), "tether_init_length: %f", this->tether_init_length);
     RCLCPP_INFO(this->get_logger(), "gravity_const: %f", this->gravity_const);
-    RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
-    // RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
+    // RCLCPP_INFO(this->get_logger(), "disturbation_mode: %s", this->disturb_mode_);
+    RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
     // Init publishers
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
@@ -160,8 +157,8 @@ int main(int argc, char *argv[])
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
   rclcpp::init(argc, argv);
   const char *node_user = std::getenv("USER");
-  auto node = std::make_shared<tether_model::TetherModel>(node_user ? std::string(node_user) + "_tether_model"
-                                                                    : "tether_model");
+  auto node = std::make_shared<tether_model::TetherModel>(node_user ? std::string(node_user) + "_tether_model_node"
+                                                                    : "tether_model_node");
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
