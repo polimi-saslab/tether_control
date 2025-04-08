@@ -62,6 +62,7 @@ def launch_setup(context, *args, **kwargs):
         package='tether_control',
         executable='tether_model_node',
         parameters=[tether_model_config_path],
+        # arguments=['--ros-args', '--log-level', 'DEBUG'],
         output='screen',
         emulate_tty=True # coloured RCLCPP log, in case RCUTILS_COLORIZED_OUTPUT not set
     )
@@ -77,9 +78,9 @@ def launch_setup(context, *args, **kwargs):
     # )
 
     return [
-        # udp_process,
+        udp_process,
         # px4_process,
-        # gazebo_bridge_node,
-        # tether_control_node
+        gazebo_bridge_node,
+        tether_control_node,
         tether_model_node
     ]

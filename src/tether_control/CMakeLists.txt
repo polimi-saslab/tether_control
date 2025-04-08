@@ -23,6 +23,7 @@ set(TETHER_CONTROL_SOURCES
   src/TetherControl/tether_control.cpp
   src/TetherControl/utils.cpp
   src/TetherControl/callbacks.cpp
+  src/TetherControl/px4_publishers.cpp
 )
 
 add_executable(tether_control_node

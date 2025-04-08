@@ -50,12 +50,13 @@ namespace tether_model
   public:
     explicit TetherModel(const std::string &nodeName);
 
+    // model names, atm only TET_GRAV_FIL_ANG
     enum class DisturbationMode
     {
       NONE,
       STRONG_SIDE,
       CIRCULAR,
-      CUSTOM
+      TET_GRAV_FIL_ANG // tether grav force + angle according to Filippo's paper
     };
 
   private:
@@ -66,21 +67,23 @@ namespace tether_model
     // Model parameters
     float tether_density = 0.0f;     // [kg/m^3] density of the cable
     float tether_diameter = 0.1f;    // [m] radius of the cable
-    float tether_init_length = 0.0f; // [m] length of the cable
+    float tether_init_length = 1.0f; // [m] length of the cable
     float gravity_const = 9.81f;     // [m/s^2] gravity constant
-    float tether_mass = 0.0f;        // [kg] mass of the cable
 
-    float tether_cur_length = 0.0f; // [m] current length of the cable
-    float tether_grav_force = 0.0f;
-    float tether_cur_ground_angle = 0.0f;
-    float winch_force = 0.0f;
+    // Model variables
+    float winch_force = 0.0f;   // [N] tension force felt by the winch
+    float dist_gs_drone = 0.0f; // [m] distance between drone and ground station
+
+    float tether_cur_length = dist_gs_drone; // [m] current length of the cable, assuming straight line atm
+    float tether_drone_cur_angle = 0.0f;     // [rad] angle between the cable and the drone
+    float tether_ground_cur_angle_theta;     // [rad] angle between the cable and the ground plane
+    float tether_ground_cur_angle_phi;       // [rad] angle between the projection of the cable on ground and x
 
     // Condition variables
     bool is_node_alive = true; // always alive
     std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
-    DisturbationMode disturb_mode_ = DisturbationMode::STRONG_SIDE; // to set manually
+    DisturbationMode disturb_mode = DisturbationMode::NONE;
 
-    float dist_gs_drone = 0.0f; // [m] distance between drone and ground station
     px4_msgs::msg::VehicleLocalPosition local_pos_latest;
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
 
@@ -90,9 +93,13 @@ namespace tether_model
     // Susbcribers
     rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr sim_status_sub;
     rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
+
     // Callback functions
     void simStatusSubCb(const std_msgs::msg::UInt8MultiArray msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
+
+    void computeTetherForceVec();
+    void convertModeStringToEnum(std::string disturb_mode_s);
   };
 
 } // namespace tether_model

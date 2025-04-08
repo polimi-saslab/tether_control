@@ -17,7 +17,7 @@ namespace tether_control
     if((msg.z <= -1.0) && (!this->is_init_pos))
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- POSITION READY --------------");
-        this->is_init_pos = true;
+        // this->is_init_pos = true;
       }
     // if(((msg.x <= this->starting_pos[0] + 0.1) && (msg.x >= this->starting_pos[1] - 0.1))
     //    && ((msg.y <= this->starting_pos[1] + 0.1) && (msg.y >= this->starting_pos[1] - 0.1))

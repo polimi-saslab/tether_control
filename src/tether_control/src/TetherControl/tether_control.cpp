@@ -142,8 +142,9 @@ namespace tether_control
                                this->controlMode);
 
           Eigen::Vector4d controller_output;
-          controller_output[3] = 0.8f; // thrust
+          controller_output[3] = 0.85f; // thrust
           Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
+          Eigen::Quaterniond q_flip(Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitY()));
 
           // pidController(controller_output, desired_quat);
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
@@ -151,7 +152,7 @@ namespace tether_control
                                controller_output[1], controller_output[2], controller_output[3], desired_quat.w(),
                                desired_quat.x(), desired_quat.y(), desired_quat.z());
           publishOffboardControlMode({false, false, false, true, false});
-          publishAttitudeSetpoint(controller_output, desired_quat);
+          publishAttitudeSetpoint(controller_output, q_flip);
         }
       else if(this->controlMode == ControlMode::TETHER_FORCE_REACTIONS)
         {
@@ -174,113 +175,6 @@ namespace tether_control
     alive_timer_ = this->create_wall_timer(1000ms, alive_timer_callback);
 
     RCLCPP_INFO(this->get_logger(), "################# TETHER CONTROL NODE INITIALIZED #################");
-  }
-
-  ////////////////////////////////////// PX4 publish functions //////////////////////////////////////
-
-  /**
-   * @brief Send a command to Arm the vehicle
-   */
-  void TetherControl::arm()
-  {
-    publishVehicleCommand(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0);
-
-    RCLCPP_INFO(this->get_logger(), "Arm command send");
-  }
-
-  /**
-   * @brief Send a command to Disarm the vehicle
-   */
-  void TetherControl::disarm()
-  {
-    publishVehicleCommand(VehicleCommand::VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0);
-
-    RCLCPP_INFO(this->get_logger(), "Disarm command send");
-  }
-
-  /**
-   * @brief Publish the offboard control mode.
-   *        For this example, only position and altitude controls are active.
-   */
-  void TetherControl::publishOffboardControlMode(const std::vector<bool> &control_modes)
-  {
-    if(control_modes.size() != 5)
-      {
-        RCLCPP_ERROR(this->get_logger(), "Invalid control_modes vector size. Expected 5 elements.");
-        return;
-      }
-
-    OffboardControlMode msg{};
-    msg.position = control_modes[0];
-    msg.velocity = control_modes[1];
-    msg.acceleration = control_modes[2];
-    msg.attitude = control_modes[3];
-    msg.direct_actuator = control_modes[4];
-
-    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-    offboard_control_mode_publisher_->publish(msg);
-  }
-
-  /**
-   * @brief Publish a trajectory setpoint
-   *        For this example, it sends a trajectory setpoint to make the
-   *        vehicle hover at 5 meters with a yaw angle of 180 degrees.
-   */
-  void TetherControl::publishTrajectorySetpoint()
-  {
-    TrajectorySetpoint msg{};
-    msg.position = {0.0, 0.0, -1.0};
-    msg.yaw = -3.14;
-    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-    trajectory_setpoint_publisher_->publish(msg);
-  }
-
-  /**
-   * @brief Publish vehicle commands
-   * @param command   Command code (matches VehicleCommand and MAVLink MAV_CMD codes)
-   * @param param1    Command parameter 1
-   * @param param2    Command parameter 2
-   */
-  void TetherControl::publishVehicleCommand(uint16_t command, float param1, float param2)
-  {
-    VehicleCommand msg{};
-    msg.param1 = param1;
-    msg.param2 = param2;
-    msg.command = command;
-    msg.target_system = 1;
-    msg.target_component = 1;
-    msg.source_system = 1;
-    msg.source_component = 1;
-    msg.from_external = true;
-    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-    vehicle_command_publisher_->publish(msg);
-  }
-
-  void TetherControl::publishAttitudeSetpoint(const Eigen::Vector4d &controller_output,
-                                              const Eigen::Quaterniond &desired_quat)
-  {
-    px4_msgs::msg::VehicleAttitudeSetpoint attitude_setpoint_msg;
-    // Prepare AttitudeSetpoint msg;
-    attitude_setpoint_msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-    Eigen::Quaterniond rotated_quat;
-    rotated_quat = rotateQuaternionFromToENU_NED(desired_quat);
-    attitude_setpoint_msg.q_d[0] = rotated_quat.w();
-    attitude_setpoint_msg.q_d[1] = rotated_quat.x();
-    attitude_setpoint_msg.q_d[2] = rotated_quat.y();
-    attitude_setpoint_msg.q_d[3] = rotated_quat.z();
-
-    if(controller_output[3] > 0.1)
-      {
-        attitude_setpoint_msg.thrust_body[0] = 0.0;
-        attitude_setpoint_msg.thrust_body[1] = 0.0;
-        attitude_setpoint_msg.thrust_body[2] = -controller_output[3]; // DO NOT FORGET THE MINUS SIGN (body NED frame)
-      }
-    else
-      {
-        attitude_setpoint_msg.thrust_body[2] = -0.1;
-      }
-
-    attitude_pub_->publish(attitude_setpoint_msg);
   }
 
   ////////////////////////////////////// Control functions //////////////////////////////////////
