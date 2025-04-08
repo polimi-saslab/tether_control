@@ -47,22 +47,23 @@ def launch_setup(context, *args, **kwargs):
             'config_file': bridge_config_path,
             'use_sim_time': True  # Add this line to enable simulation time
         }],
-        output='screen'
+        output='screen',
+        emulate_tty=True # coloured RCLCPP log, in case RCUTILS_COLORIZED_OUTPUT not set
     )
 
     tether_control_node = Node(
         package='tether_control',
         executable='tether_control_node',
-        output='screen'
+        output='screen',
+        emulate_tty=True # coloured RCLCPP log, in case RCUTILS_COLORIZED_OUTPUT not set
     )
 
     tether_model_node = Node(
         package='tether_control',
         executable='tether_model_node',
-        parameters=[{
-            'config_file': tether_model_config_path
-        }],
-        output='screen'
+        parameters=[tether_model_config_path],
+        output='screen',
+        emulate_tty=True # coloured RCLCPP log, in case RCUTILS_COLORIZED_OUTPUT not set
     )
 
     udp_process = ExecuteProcess(
@@ -76,8 +77,9 @@ def launch_setup(context, *args, **kwargs):
     # )
 
     return [
-        udp_process,
+        # udp_process,
         # px4_process,
-        gazebo_bridge_node,
-        tether_control_node
+        # gazebo_bridge_node,
+        # tether_control_node
+        tether_model_node
     ]

@@ -57,7 +57,7 @@ namespace tether_model
         }
       else
         {
-          if(sim_status[0] == 0)
+          if(sim_status[0] == 0) // msg that tether_control would send when rdy, atm is ignored
             {
               RCLCPP_INFO_ONCE(this->get_logger(), "Waiting for simulation mode to be set");
               publishTetherForceDisturbations();

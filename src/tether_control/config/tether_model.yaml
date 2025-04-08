@@ -1,4 +1,4 @@
-yannis_tether_model_node:
+yannis_tether_model_node: # $USER + tether_model_node, @todo: change
   ros__parameters:
     tether_model:
       gravity_const: 9.81
