@@ -155,7 +155,7 @@ namespace tether_control
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode ATTITUDE");
 
           Eigen::Vector4d controller_output;
-          controller_output[3] = 0.85f; // thrust
+          controller_output[3] = 0.4f; // thrust
           Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
 
           // pidController(controller_output, desired_quat);

@@ -105,21 +105,18 @@ namespace tether_control
     bool is_node_alive = false;
 
     // Parameters
-    std::string uav_type = "MC"; // [MC, VTOL, VTOL_TAILSITTER]
-    bool tethered = false;       // [true, false] true if the drone is tethered
-    float hoverThrust = 0.73f;   // [N] thrust to be applied to drone to hover, determined by simulation
+    std::string uav_type = "MC";         // [MC, VTOL, VTOL_TAILSITTER]
+    bool tethered = false;               // [true, false] true if the drone is tethered
+    float hoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover, determined by simulation
     float gravComp = 9.81f;
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;
-
-    // Random variables
-    float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover
 
     // Control variables
     ControlMode control_mode = ControlMode::TETHER_FORCE_REACTIONS;
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
-    std::array<float, 3> starting_pos = {0.0f, 0.0f, -1.0f};
+    std::array<float, 3> starting_pos = {0.0f, 0.0f, -2.0f};
     float last_er_accel_z = 0.0f;
 
     // variables for tether force reactions mode

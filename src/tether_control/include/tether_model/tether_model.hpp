@@ -71,7 +71,7 @@ namespace tether_model
     float gravity_const = 9.81f;     // [m/s^2] gravity constant
 
     // Model variables
-    float winch_force = 1.0f;   // [N] tension force felt by the winch
+    float winch_force = 4.0f;   // [N] tension force felt by the winch
     float dist_gs_drone = 0.0f; // [m] distance between drone and ground station
 
     float tether_cur_length = dist_gs_drone; // [m] current length of the cable, assuming straight line atm
@@ -99,7 +99,9 @@ namespace tether_model
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
 
     void computeTetherForceVec();
-    void convertDistMode(std::string disturb_mode_s);
+    void convertDisturbMode(std::string disturb_mode_s);
+
+    template <typename T> int sgn(T val) { return (T(0) < val) - (val < T(0)); }
   };
 
 } // namespace tether_model
