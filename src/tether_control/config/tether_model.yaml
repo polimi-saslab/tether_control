@@ -1,8 +1,0 @@
-yannis_tether_model_node: # $USER + tether_model_node, @todo: change
-  ros__parameters:
-    tether_model:
-      gravity_const: 9.81
-      tether_init_length: 10.0
-      tether_diameter: 0.01
-      tether_density: 970.0 #source: Sofia
-    disturb_mode: "TET_GRAV_FIL_ANG"

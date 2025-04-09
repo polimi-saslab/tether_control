@@ -13,7 +13,7 @@ namespace tether_model
     this->tether_diameter = this->declare_parameter<float>("tether_model.tether_diameter", 0.005f);
     this->tether_init_length = this->declare_parameter<float>("tether_init_length", 1.0f);
     this->gravity_const = this->declare_parameter<float>("tether_model.gravity_const", 9.81f);
-    std::string disturb_mode_s = this->declare_parameter<std::string>("disturb_mode", "TET_GRAV_FIL_ANG");
+    std::string disturb_mode_s = this->declare_parameter<std::string>("disturb_mode", "STRONG_SIDE");
 
     RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
     RCLCPP_INFO(this->get_logger(), "tether_density: %f", this->tether_density);
@@ -23,7 +23,7 @@ namespace tether_model
     RCLCPP_INFO(this->get_logger(), "disturb_mode: %s", disturb_mode_s.c_str());
     RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
-    convertModeStringToEnum(disturb_mode_s);
+    convertDistMode(disturb_mode_s);
 
     // Init publishers
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
@@ -122,9 +122,9 @@ namespace tether_model
       }
     else if(this->disturb_mode == DisturbationMode::STRONG_SIDE)
       {
-        msg.wrench.force.x = -2.0;
-        msg.wrench.force.y = -2.0;
-        msg.wrench.force.z = -2.0;
+        msg.wrench.force.x = -2.5;
+        msg.wrench.force.y = -2.5;
+        msg.wrench.force.z = -2.5;
         msg.wrench.torque.x = 0.0;
         msg.wrench.torque.y = 0.0;
         msg.wrench.torque.z = 0.0;
@@ -176,8 +176,8 @@ namespace tether_model
         msg.wrench.torque.z = 0.0;
       }
 
-    RCLCPP_INFO(get_logger(), "Publishing tether forces [%f, %f, %f]", msg.wrench.force.x, msg.wrench.force.y,
-                msg.wrench.force.z);
+    RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), LOG_THROTTLE, "Publishing tether forces [%f, %f, %f]",
+                         msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
     this->tether_force_pub_->publish(msg);
   }
 
@@ -204,13 +204,9 @@ namespace tether_model
     // float phi = 0.0f; // [rad] tether angle in xy plane
   }
 
-  void TetherModel::convertModeStringToEnum(std::string disturb_mode_s)
+  void TetherModel::convertDistMode(std::string disturb_mode_s)
   {
-    if(disturb_mode_s == "NONE")
-      {
-        this->disturb_mode = DisturbationMode::NONE;
-      }
-    else if(disturb_mode_s == "STRONG_SIDE")
+    if(disturb_mode_s == "STRONG_SIDE")
       {
         this->disturb_mode = DisturbationMode::STRONG_SIDE;
       }
@@ -222,9 +218,14 @@ namespace tether_model
       {
         this->disturb_mode = DisturbationMode::TET_GRAV_FIL_ANG;
       }
+    else if(disturb_mode_s == "NONE")
+      {
+        this->disturb_mode = DisturbationMode::NONE;
+      }
     else
       {
-        RCLCPP_ERROR(this->get_logger(), "Disturbation mode not defined");
+        RCLCPP_ERROR(this->get_logger(), "Disturbation mode not defined, setting to NONE");
+        this->disturb_mode = DisturbationMode::NONE;
       }
   }
 

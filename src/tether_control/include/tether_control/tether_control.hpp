@@ -82,14 +82,13 @@ namespace tether_control
     void arm();
     void disarm();
 
-    enum ControlMode
+    enum class ControlMode
     {
-      POSITION_CONTROL = 0,
-      VELOCITY_CONTROL = 1,
-      ACCELERATION_CONTROL = 2,
-      ATTITUDE_CONTROL = 3,
-      DIRECT_ACTUATORS = 4,
-      TETHER_FORCE_REACTIONS = 5
+      POSITION,
+      ATTITUDE,
+      DIRECT_ACTUATORS,
+      TETHER_FORCE_REACTIONS,
+      NONE
     };
 
   private:
@@ -98,13 +97,16 @@ namespace tether_control
     rclcpp::TimerBase::SharedPtr alive_timer_;
 
     // Condition variables
+    std::string control_mode_s;
     bool is_armed = false;
     bool prechecks_passed = false;
     bool is_init_pos = false;
     bool is_node_alive = false;
 
     // Parameters
-    float hoverThrust = 0.73f; // [N] thrust to be applied to drone to hover, determined by simulation
+    std::string uav_type = "MC"; // [MC, VTOL, VTOL_TAILSITTER]
+    bool tethered = false;       // [true, false] true if the drone is tethered
+    float hoverThrust = 0.73f;   // [N] thrust to be applied to drone to hover, determined by simulation
     float gravComp = 9.81f;
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;
@@ -113,7 +115,7 @@ namespace tether_control
     float droneHoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover
 
     // Control variables
-    uint8_t controlMode = ControlMode::TETHER_FORCE_REACTIONS;
+    ControlMode control_mode = ControlMode::TETHER_FORCE_REACTIONS;
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
     std::vector<float> starting_pos = {0.0f, 0.0f, -1.0f};
@@ -164,6 +166,7 @@ namespace tether_control
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
     double get_pitch_from_imu(const geometry_msgs::msg::Quaternion &quat);
 
+    void convertControlMode(std::string control_mode_s);
     // Others
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped
   };

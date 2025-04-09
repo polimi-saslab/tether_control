@@ -48,17 +48,25 @@ namespace tether_control
   {
     RCLCPP_INFO(this->get_logger(), "################# TETHER CONTROL NODE INITIALIZING #################");
 
+    std::string control_mode_s;
+
     // Init parameters
+    this->uav_type = this->declare_parameter<std::string>("uav_type", "MC");
+    this->tethered = this->declare_parameter<bool>("tethered", true);
+    control_mode_s = this->declare_parameter<std::string>("control_mode", "ATTITUDE");
     this->hoverThrust = this->declare_parameter<float>("hoverThrust", 0.7f);
     this->gravComp = this->declare_parameter<float>("gravComp", 9.81f);
     this->attThrustKp = this->declare_parameter<float>("attThrustKp", 0.5f);
     this->attThrustKd = this->declare_parameter<float>("attThrustKd", 0.05f);
 
     RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
+    RCLCPP_INFO(this->get_logger(), "control_mode: %s", control_mode_s);
+    RCLCPP_INFO(this->get_logger(), "uav_type: %f", this->uav_type.c_str());
+    RCLCPP_INFO(this->get_logger(), "tethered: %i", this->tethered);
     RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
     RCLCPP_INFO(this->get_logger(), "gravComp: %f", this->gravComp);
-    RCLCPP_INFO(this->get_logger(), "Kp: %f", this->attThrustKp);
-    RCLCPP_INFO(this->get_logger(), "Kd: %f", this->attThrustKd);
+    RCLCPP_INFO(this->get_logger(), "attThrustKp: %f", this->attThrustKp);
+    RCLCPP_INFO(this->get_logger(), "attThrustKd: %f", this->attThrustKd);
     RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
     // Init publishers
@@ -121,30 +129,27 @@ namespace tether_control
       // drone armed
       if(!this->is_init_pos) // is alive, armed but not in position
         {
-          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode %d",
-                               this->controlMode);
+          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode INIT");
           publishOffboardControlMode({true, false, false, false, false});
           publishTrajectorySetpoint();
         }
-      else if(this->controlMode == ControlMode::DIRECT_ACTUATORS)
+      else if(this->control_mode == ControlMode::DIRECT_ACTUATORS)
         {
-          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode %d",
-                               this->controlMode);
+          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ,
+                               "Control in mode DIRECT_ACTUATORS");
           publishOffboardControlMode({false, false, false, false, true});
           // 0.75 is T/O value for x500
           updateMotors({this->hoverThrust, this->hoverThrust, this->hoverThrust, this->hoverThrust, std::nanf("1"),
                         std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"), std::nanf("1"),
                         std::nanf("1")});
         }
-      else if(this->controlMode == ControlMode::ATTITUDE_CONTROL)
+      else if(this->control_mode == ControlMode::ATTITUDE)
         {
-          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode %d",
-                               this->controlMode);
+          RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ, "Control in mode ATTITUDE");
 
           Eigen::Vector4d controller_output;
           controller_output[3] = 0.85f; // thrust
           Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
-          Eigen::Quaterniond q_flip(Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitY()));
 
           // pidController(controller_output, desired_quat);
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
@@ -152,9 +157,9 @@ namespace tether_control
                                controller_output[1], controller_output[2], controller_output[3], desired_quat.w(),
                                desired_quat.x(), desired_quat.y(), desired_quat.z());
           publishOffboardControlMode({false, false, false, true, false});
-          publishAttitudeSetpoint(controller_output, q_flip);
+          publishAttitudeSetpoint(controller_output, desired_quat);
         }
-      else if(this->controlMode == ControlMode::TETHER_FORCE_REACTIONS)
+      else if(this->control_mode == ControlMode::TETHER_FORCE_REACTIONS)
         {
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ,
                                "Control in mode TETHER_FORCE_REACTIONS");
@@ -165,7 +170,7 @@ namespace tether_control
         {
           RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE_FREQ,
                                 "Unknown control mode, not doing anything...");
-          this->controlMode = ControlMode::ATTITUDE_CONTROL;
+          this->control_mode = ControlMode::ATTITUDE;
           publishOffboardControlMode({false, false, false, true, false});
           publishAttitudeSetpoint(Eigen::Vector4d::Zero(), Eigen::Quaterniond::Identity());
         }

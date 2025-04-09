@@ -35,4 +35,33 @@ namespace tether_control
     return pitch * (180.0 / M_PI); // Convert to degrees
   }
 
+  void TetherControl::convertControlMode(std::string control_mode_s)
+  {
+    if(control_mode_s == "POSITION")
+      {
+        this->control_mode = ControlMode::POSITION;
+      }
+    else if(control_mode_s == "ATTITUDE")
+      {
+        this->control_mode = ControlMode::ATTITUDE;
+      }
+    else if(control_mode_s == "DIRECT_ACTUATORS")
+      {
+        this->control_mode = ControlMode::DIRECT_ACTUATORS;
+      }
+    else if(control_mode_s == "TETHER_FORCE_REACTIONS")
+      {
+        this->control_mode = ControlMode::TETHER_FORCE_REACTIONS;
+      }
+    else if(control_mode_s == "NONE")
+      {
+        this->control_mode = ControlMode::NONE;
+      }
+    else
+      {
+        RCLCPP_ERROR(this->get_logger(), "Disturbation mode not defined, setting to NONE");
+        this->control_mode = ControlMode::NONE;
+      }
+  }
+
 } // namespace tether_control

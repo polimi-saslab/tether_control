@@ -82,7 +82,7 @@ namespace tether_model
     // Condition variables
     bool is_node_alive = true; // always alive
     std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
-    DisturbationMode disturb_mode = DisturbationMode::TET_GRAV_FIL_ANG;
+    DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
 
     px4_msgs::msg::VehicleLocalPosition local_pos_latest;
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
@@ -99,7 +99,7 @@ namespace tether_model
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
 
     void computeTetherForceVec();
-    void convertModeStringToEnum(std::string disturb_mode_s);
+    void convertDistMode(std::string disturb_mode_s);
   };
 
 } // namespace tether_model
