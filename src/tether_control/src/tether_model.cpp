@@ -37,8 +37,6 @@ namespace tether_model
     vehicle_local_position_sub = this->create_subscription<px4_msgs::msg::VehicleLocalPosition>(
       "/fmu/out/vehicle_local_position", qos,
       std::bind(&TetherModel::vehicleLocalPositionSubCb, this, std::placeholders::_1));
-    sim_status_sub = this->create_subscription<std_msgs::msg::UInt8MultiArray>(
-      "/tether_control/sim_status", qos, std::bind(&TetherModel::simStatusSubCb, this, std::placeholders::_1));
 
     auto timer_alive_callback = [this]() -> void {
       if(this->is_node_alive)
@@ -59,20 +57,7 @@ namespace tether_model
         }
       else
         {
-          if(sim_status[0] == 0) // msg that tether_control would send when rdy, atm is ignored
-            {
-              RCLCPP_INFO_ONCE(this->get_logger(), "Waiting for simulation mode to be set");
-
-              // filtering so that we know when tether control is active
-              if(this->dist_gs_drone == 0.0)
-                return;
-              publishTetherForceDisturbations();
-            }
-          else
-            {
-              RCLCPP_INFO_ONCE(this->get_logger(), "ALIVE");
-              publishTetherForceDisturbations();
-            }
+          publishTetherForceDisturbations();
         }
     };
 
@@ -80,12 +65,6 @@ namespace tether_model
     timer_alive_ = this->create_wall_timer(1000ms, timer_alive_callback);
 
     RCLCPP_INFO(this->get_logger(), "################# TETHER MODEL NODE INITIALIZED #################");
-  }
-
-  void TetherModel::simStatusSubCb(const std_msgs::msg::UInt8MultiArray msg)
-  {
-    this->sim_status = msg.data;
-    RCLCPP_INFO_ONCE(this->get_logger(), "Received Sim Status %d", this->sim_status[0]);
   }
 
   void TetherModel::publishTetherForceDisturbations()
@@ -124,12 +103,13 @@ namespace tether_model
     else if(this->disturb_mode == DisturbationMode::TET_GRAV_FIL_ANG)
       {
         // Specific model for tether force
-        this->tether_cur_length = this->dist_gs_drone;
+        this->tether_cur_length = this->dist_gs_drone; // easy way atm
+
         float tether_mass
           = this->tether_density * M_PI * std::pow(this->tether_diameter / 2, 2) * this->tether_cur_length; // [kg]
         float tether_ang_due_to_grav
           = 1 / 2
-            * (tether_mass * this->gravity_const * std::sin(this->tether_ground_cur_angle_phi)
+            * (tether_mass * this->gravity_const * std::sin(this->tether_ground_cur_angle_theta)
                / this->winch_force); // == 1/2(M_t*g*cos(beta)/T), from eq (39) of The Influence of
                                      // Tether Sag on Airborne Wind Energy Generation by F. Trevisi
                                      // need to rotate vector from world to ENU, since publishing tether_force
@@ -140,11 +120,14 @@ namespace tether_model
           = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:
-        msg.wrench.force.x = -(this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
+        msg.wrench.force.x = (this->winch_force)
+                             * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
                              * std::cos(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.y = -(this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
+        msg.wrench.force.y = (this->winch_force)
+                             * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
                              * std::sin(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.z = -(tether_grav_force + this->winch_force) * std::cos(this->tether_ground_cur_angle_theta);
+        msg.wrench.force.z
+          = (this->winch_force) * std::cos(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta);
         RCLCPP_INFO_THROTTLE(
           this->get_logger(), *this->get_clock(), 50,
           "tether_cur_length: %f, tether_mass: %f, tether_ang_due_to_grav: %f, tether_drone_cur_angle: %f, "
@@ -157,6 +140,7 @@ namespace tether_model
         RCLCPP_WARN_THROTTLE(get_logger(), *this->get_clock(), LOG_THROTTLE, "Disturbation mode not defined");
       }
 
+    // sanity check
     if(std::isnan(msg.wrench.force.x) || std::isnan(msg.wrench.force.y) || std::isnan(msg.wrench.force.z))
       {
         RCLCPP_WARN(this->get_logger(), "Nan values in msg force, sanitizing to 0");
@@ -167,6 +151,11 @@ namespace tether_model
         msg.wrench.torque.y = 0.0;
         msg.wrench.torque.z = 0.0;
       }
+
+    // inverse, to match drone's view
+    msg.wrench.force.x = -msg.wrench.force.x;
+    msg.wrench.force.y = -msg.wrench.force.y;
+    msg.wrench.force.z = -msg.wrench.force.z;
 
     RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), 50, "Publishing tether forces [%f, %f, %f]",
                          msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
