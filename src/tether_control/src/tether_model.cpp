@@ -140,9 +140,9 @@ namespace tether_model
           = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:
-        msg.wrench.force.x = -(1.0 + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
+        msg.wrench.force.x = -(this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
                              * std::cos(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.y = -(1.0 + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
+        msg.wrench.force.y = -(this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
                              * std::sin(this->tether_ground_cur_angle_phi);
         msg.wrench.force.z = -(tether_grav_force + this->winch_force) * std::cos(this->tether_ground_cur_angle_theta);
         RCLCPP_INFO_THROTTLE(
@@ -179,7 +179,7 @@ namespace tether_model
     // [m] distance between drone and ground station, NED frame but doesn't matter here
     this->dist_gs_drone = std::sqrt(std::pow(msg.x, 2) + std::pow(msg.y, 2) + std::pow(msg.z, 2));
 
-    // local NED_TO_ENU conversion
+    // local NED_TO_ENU conversion (PX4 to ROS)
     float x = msg.y;
     float y = msg.x;
     float z = -msg.z;
