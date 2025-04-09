@@ -68,7 +68,8 @@ using namespace px4_msgs::msg;
 #define MC_HOVER_THRUST 0.73f     // [N] thrust to be applied to drone to hover, determined by simulation
 #define X500_MASS = 2.0f + 4 * 0.016076923076923075f // [kg] mass of the drone + 4 motors
 #define HOVER_FORCE = X500_MASS * 9.81f // [N] force to be applied to drone to hover, determined by simulation
-#define LOG_THROTTLE_FREQ 2500          // [Hz] frequency at which to log throttle values
+#define LOG_THROT_FREQ 1000             // [Hz] frequency at which to log throttle values (normal)
+#define LOG_THROT_FREQ_S 100            // [Hz] frequency at which to log throttle values (speedy)
 
 namespace tether_control
 {
@@ -118,7 +119,7 @@ namespace tether_control
     ControlMode control_mode = ControlMode::TETHER_FORCE_REACTIONS;
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
-    std::vector<float> starting_pos = {0.0f, 0.0f, -1.0f};
+    std::array<float, 3> starting_pos = {0.0f, 0.0f, -1.0f};
     float last_er_accel_z = 0.0f;
 
     // variables for tether force reactions mode
@@ -165,8 +166,8 @@ namespace tether_control
     // Utils
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
     double get_pitch_from_imu(const geometry_msgs::msg::Quaternion &quat);
-
     void convertControlMode(std::string control_mode_s);
+
     // Others
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped
   };

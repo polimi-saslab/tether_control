@@ -98,7 +98,7 @@ namespace tether_control
   void TetherControl::publishTrajectorySetpoint()
   {
     TrajectorySetpoint msg{};
-    msg.position = {0.0, 0.0, -1.0};
+    msg.position = this->starting_pos;
     msg.yaw = -3.14;
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     trajectory_setpoint_publisher_->publish(msg);
@@ -121,7 +121,8 @@ namespace tether_control
     msg.position = {radius * cos(angle), radius * sin(angle), -1.0};
     msg.yaw = -3.14;
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-    RCLCPP_INFO(get_logger(), "Publishing circles: [%f, %f, %f]", msg.position[0], msg.position[1], msg.position[2]);
+    RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Publishing circles: [%f, %f, %f]",
+                         msg.position[0], msg.position[1], msg.position[2]);
     trajectory_setpoint_publisher_->publish(msg);
   }
 

@@ -12,8 +12,8 @@ namespace tether_control
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
     this->local_pos_latest = msg;
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Drone position: [%f, %f, %f]", msg.x, msg.y,
-                         msg.z);
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Drone position: [%f, %f, %f]", msg.x,
+                         msg.y, msg.z);
     if((msg.z <= -1.0) && (!this->is_init_pos))
       {
         RCLCPP_INFO_ONCE(this->get_logger(), "-------------- POSITION READY --------------");

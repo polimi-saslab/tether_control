@@ -83,5 +83,5 @@ def launch_setup(context, *args, **kwargs):
         # px4_process,
         gazebo_bridge_node,
         tether_control_node,
-        # tether_model_node
+        tether_model_node
     ]

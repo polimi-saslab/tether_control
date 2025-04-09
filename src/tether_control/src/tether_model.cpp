@@ -95,14 +95,6 @@ namespace tether_model
     msg.header.stamp = this->now();
     msg.header.frame_id = "base_link";
 
-    // // initializing to avoid nan errors with gz
-    // msg.wrench.force.x = 0.0;
-    // msg.wrench.force.y = 0.0;
-    // msg.wrench.force.z = 0.0;
-    // msg.wrench.torque.x = 0.0;
-    // msg.wrench.torque.y = 0.0;
-    // msg.wrench.torque.z = 0.0;
-
     if(this->disturb_mode == DisturbationMode::CIRCULAR)
       {
         static double theta = 0.0; // angle for circular motion
@@ -148,13 +140,13 @@ namespace tether_model
           = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:
-        msg.wrench.force.x = (tether_grav_force + this->winch_force) * std::cos(this->tether_drone_cur_angle)
+        msg.wrench.force.x = -(tether_grav_force + this->winch_force) * std::cos(this->tether_drone_cur_angle)
                              * std::cos(this->tether_ground_cur_angle_theta);
-        msg.wrench.force.y = (tether_grav_force + this->winch_force) * std::cos(this->tether_drone_cur_angle)
+        msg.wrench.force.y = -(tether_grav_force + this->winch_force) * std::cos(this->tether_drone_cur_angle)
                              * std::sin(this->tether_ground_cur_angle_theta);
-        msg.wrench.force.z = (tether_grav_force + this->winch_force) * std::sin(this->tether_drone_cur_angle);
-        RCLCPP_DEBUG(
-          this->get_logger(),
+        msg.wrench.force.z = -(tether_grav_force + this->winch_force) * std::sin(this->tether_drone_cur_angle);
+        RCLCPP_INFO_THROTTLE(
+          this->get_logger(), *this->get_clock(), LOG_THROTTLE,
           "tether_cur_length: %f, tether_mass: %f, tether_ang_due_to_grav: %f, tether_drone_cur_angle: %f, "
           "tether_grav_force: %f, winch_force: %f, tether_ground_cur_angle_theta: %f, tether_ground_cur_angle_phi: %f",
           this->tether_cur_length, tether_mass, tether_ang_due_to_grav, this->tether_drone_cur_angle, tether_grav_force,
@@ -192,10 +184,10 @@ namespace tether_model
     this->tether_ground_cur_angle_theta = std::atan2(std::sqrt(std::pow(msg.x, 2) + std::pow(msg.y, 2)), msg.z);
     this->tether_ground_cur_angle_phi = std::atan2(msg.y, msg.x);
 
-    RCLCPP_INFO(this->get_logger(),
-                "Vehicle rel pos: [%f, %f, %f], distance & angle between drone and ground station: [%f, %f, %f]", msg.x,
-                msg.y, msg.z, this->dist_gs_drone, this->tether_ground_cur_angle_phi,
-                this->tether_ground_cur_angle_theta);
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE,
+                         "Vehicle rel pos: [%f, %f, %f], [dist_gs_drone, phi, theta]: [%f, %f, %f]", msg.x, msg.y,
+                         msg.z, this->dist_gs_drone, this->tether_ground_cur_angle_phi,
+                         this->tether_ground_cur_angle_theta);
   }
 
   void TetherModel::computeTetherForceVec()
