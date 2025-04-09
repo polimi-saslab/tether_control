@@ -20,23 +20,23 @@ namespace tether_control
     transform.transform.translation.y = this->local_pos_latest.x;  // North → Y
     transform.transform.translation.z = -this->local_pos_latest.z; // Down → -Z
 
-    // Orientation: NED to ENU also needs conversion
-    // Assuming msg->q is in NED, we must convert quaternion from NED to ENU
-    // Simplest: convert using a static transform (90 deg rotation around Z)
+    tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
+                          this->attitude_latest.q[0]);
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
 
-    tf2::Quaternion q_ned(this->attitude_latest.q[0], this->attitude_latest.q[1], this->attitude_latest.q[2],
-                          this->attitude_latest.q[3]);
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Drone RPY orientation: [%f, %f, %f]",
+                         roll, pitch, yaw);
 
-    tf2::Quaternion q_rot;
-    q_rot.setRPY(M_PI, 0, 0);
+    // Transform quaternion (NED to ENU)
+    tf2::Quaternion q_rotate;
+    q_rotate.setRPY(M_PI, 0.0, M_PI / 2.0); // 180° roll, 90° yaw
+    tf2::Quaternion q_enu = q_rotate * q_ned;
 
-    tf2::Quaternion q_enu = q_rot * q_ned;
-    q_enu.normalize();
-
-    transform.transform.rotation.x = q_enu[0];
-    transform.transform.rotation.y = q_enu[1];
-    transform.transform.rotation.z = q_enu[2];
-    transform.transform.rotation.w = q_enu[3];
+    transform.transform.rotation.x = q_enu[1];
+    transform.transform.rotation.y = q_enu[2];
+    transform.transform.rotation.z = q_enu[3];
+    transform.transform.rotation.w = q_enu[0];
 
     this->tf_broadcaster_->sendTransform(transform);
   }
