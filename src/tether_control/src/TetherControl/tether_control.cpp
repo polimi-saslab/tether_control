@@ -71,6 +71,8 @@ namespace tether_control
 
     convertControlMode(control_mode_s);
 
+    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+
     // Init publishers
     offboard_control_mode_publisher_ = this->create_publisher<OffboardControlMode>("/fmu/in/offboard_control_mode", 10);
     trajectory_setpoint_publisher_ = this->create_publisher<TrajectorySetpoint>("/fmu/in/trajectory_setpoint", 10);
@@ -90,6 +92,8 @@ namespace tether_control
     vehicle_local_position_sub = this->create_subscription<VehicleLocalPosition>(
       "/fmu/out/vehicle_local_position", qos,
       std::bind(&TetherControl::vehicleLocalPositionSubCb, this, std::placeholders::_1));
+    vehicle_attitude_sub = this->create_subscription<VehicleAttitude>(
+      "/fmu/out/vehicle_attitude", qos, std::bind(&TetherControl::vehicleAttitudeSubCb, this, std::placeholders::_1));
     vehicle_tether_force_sub = this->create_subscription<geometry_msgs::msg::Wrench>(
       "/tether_lin/base_link/ForceTorque", qos,
       std::bind(&TetherControl::vehicleTetherForceSubCb, this, std::placeholders::_1));
@@ -181,6 +185,9 @@ namespace tether_control
           publishOffboardControlMode({false, false, false, true, false});
           publishAttitudeSetpoint(Eigen::Vector4d::Zero(), Eigen::Quaterniond::Identity());
         }
+
+      // transformation map -> base_link, mostly for visualization purposes
+      transformMapDrone();
     };
     timer_ = this->create_wall_timer(10ms, timer_callback);
     alive_timer_ = this->create_wall_timer(1000ms, alive_timer_callback);

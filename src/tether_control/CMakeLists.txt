@@ -14,6 +14,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 include_directories(
   include 
@@ -24,6 +25,7 @@ set(TETHER_CONTROL_SOURCES
   src/TetherControl/utils.cpp
   src/TetherControl/callbacks.cpp
   src/TetherControl/px4_publishers.cpp
+  src/TetherControl/visualization.cpp
 )
 
 add_executable(tether_control_node
@@ -38,7 +40,8 @@ ament_target_dependencies(tether_control_node
   rclcpp 
   sensor_msgs
   std_msgs
-  tf2)
+  tf2
+  tf2_ros)
 
 ####################### TETHER MODEL #######################
 

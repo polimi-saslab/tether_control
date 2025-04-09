@@ -8,6 +8,18 @@ using namespace px4_msgs::msg;
 
 namespace tether_control
 {
+
+  void TetherControl::vehicleAttitudeSubCb(const px4_msgs::msg::VehicleAttitude msg)
+  {
+    // storing local pos, to convert to lambda function if we don't do anything more with the sub
+    this->attitude_latest = msg;
+
+    // plotting once just for info
+    RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT ATTITUDE DATA --------------");
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "Orientation: %f %f %f %f", msg.q[0], msg.q[1],
+                         msg.q[2], msg.q[3]);
+  }
+
   void TetherControl::vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg)
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub

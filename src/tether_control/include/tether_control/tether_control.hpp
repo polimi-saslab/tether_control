@@ -36,13 +36,16 @@
  * @author Yannis Coderey <yannis09@yahoo.fr>
  */
 
+#include "geometry_msgs/msg/transform_stamped.hpp"
 #include "geometry_msgs/msg/wrench_stamped.hpp"
 #include "std_msgs/msg/u_int8_multi_array.hpp"
+#include "tf2_ros/transform_broadcaster.h"
 #include <Eigen/Core>
 #include <geometry_msgs/msg/wrench.hpp>
 #include <px4_msgs/msg/actuator_motors.hpp>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
 #include <px4_msgs/msg/trajectory_setpoint.hpp>
+#include <px4_msgs/msg/vehicle_attitude.hpp>
 #include <px4_msgs/msg/vehicle_attitude_setpoint.hpp>
 #include <px4_msgs/msg/vehicle_command.hpp>
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
@@ -53,12 +56,11 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 
-#include <stdint.h>
-
 #include <chrono>
 #include <cmath>
 #include <eigen3/Eigen/Eigen>
 #include <iostream>
+#include <stdint.h>
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
@@ -124,9 +126,12 @@ namespace tether_control
     size_t counter_time = 0;
 
     // PX4 subscription data
+    px4_msgs::msg::VehicleAttitude attitude_latest;       // @todo: just need to stock important var imo
     px4_msgs::msg::VehicleLocalPosition local_pos_latest; // @todo: just need to stock important var imo
     geometry_msgs::msg::Wrench drone_tether_force_latest;
     sensor_msgs::msg::Imu drone_imu_latest;
+
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
     // ROS2 Publishers
     rclcpp::Publisher<px4_msgs::msg::OffboardControlMode>::SharedPtr offboard_control_mode_publisher_;
@@ -147,11 +152,13 @@ namespace tether_control
     // Susbcribers
     rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_sub;
     rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
+    rclcpp::Subscription<px4_msgs::msg::VehicleAttitude>::SharedPtr vehicle_attitude_sub;
     rclcpp::Subscription<geometry_msgs::msg::Wrench>::SharedPtr vehicle_tether_force_sub;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr drone_imu_sub;
 
     // Callback functions
     void droneImuSubCb(const sensor_msgs::msg::Imu msg);
+    void vehicleAttitudeSubCb(const px4_msgs::msg::VehicleAttitude msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
     void vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg);
@@ -167,6 +174,7 @@ namespace tether_control
 
     // Others
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped
+    void transformMapDrone();
   };
 
 } // namespace tether_control
