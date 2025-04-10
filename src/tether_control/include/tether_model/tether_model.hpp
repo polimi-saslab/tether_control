@@ -38,7 +38,14 @@
 
 #include "geometry_msgs/msg/wrench_stamped.hpp"
 #include "std_msgs/msg/u_int8_multi_array.hpp"
+#include "tf2_ros/transform_broadcaster.h"
+#include <Eigen/Core>
+#include <px4_msgs/msg/vehicle_attitude.hpp>
 #include <px4_msgs/msg/vehicle_local_position.hpp>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.h>
+
+#include <eigen3/Eigen/Eigen>
 #include <rclcpp/rclcpp.hpp>
 
 #define LOG_THROTTLE 1000
@@ -86,6 +93,7 @@ namespace tether_model
     DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
 
     px4_msgs::msg::VehicleLocalPosition local_pos_latest;
+    px4_msgs::msg::VehicleAttitude attitude_latest;
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
 
     // Publish functions
@@ -93,10 +101,11 @@ namespace tether_model
 
     // Susbcribers
     rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
+    rclcpp::Subscription<px4_msgs::msg::VehicleAttitude>::SharedPtr vehicle_attitude_sub;
 
     // Callback functions
-    void simStatusSubCb(const std_msgs::msg::UInt8MultiArray msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
+    void vehicleAttitudeSubCb(const px4_msgs::msg::VehicleAttitude msg);
 
     void computeTetherForceVec();
     void convertDisturbMode(std::string disturb_mode_s);

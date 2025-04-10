@@ -58,7 +58,8 @@ ament_target_dependencies(tether_model_node
   rclcpp 
   sensor_msgs
   std_msgs
-  tf2)
+  tf2
+  tf2_ros)
 
   #########################################################
 

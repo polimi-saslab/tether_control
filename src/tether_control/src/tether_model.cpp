@@ -37,6 +37,8 @@ namespace tether_model
     vehicle_local_position_sub = this->create_subscription<px4_msgs::msg::VehicleLocalPosition>(
       "/fmu/out/vehicle_local_position", qos,
       std::bind(&TetherModel::vehicleLocalPositionSubCb, this, std::placeholders::_1));
+    vehicle_attitude_sub = this->create_subscription<px4_msgs::msg::VehicleAttitude>(
+      "/fmu/out/vehicle_attitude", qos, std::bind(&TetherModel::vehicleAttitudeSubCb, this, std::placeholders::_1));
 
     auto timer_alive_callback = [this]() -> void {
       if(this->is_node_alive)
@@ -70,12 +72,23 @@ namespace tether_model
     RCLCPP_INFO(this->get_logger(), "################# TETHER MODEL NODE INITIALIZED #################");
   }
 
+  void TetherModel::vehicleAttitudeSubCb(const px4_msgs::msg::VehicleAttitude msg)
+  {
+    // storing local pos, to convert to lambda function if we don't do anything more with the sub
+    this->attitude_latest = msg;
+
+    // plotting once just for info
+    RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT ATTITUDE DATA --------------");
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "Orientation: %f %f %f %f", msg.q[0], msg.q[1],
+                         msg.q[2], msg.q[3]);
+  }
+
   void TetherModel::publishTetherForceDisturbations()
   {
     geometry_msgs::msg::WrenchStamped msg;
 
     msg.header.stamp = this->now();
-    msg.header.frame_id = "base_link";
+    msg.header.frame_id = "map";
 
     if(this->disturb_mode == DisturbationMode::CIRCULAR)
       {
@@ -123,25 +136,20 @@ namespace tether_model
           = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:
-        msg.wrench.force.x = (this->winch_force)
-                             * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
+        msg.wrench.force.x = (tether_grav_force + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
                              * std::cos(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.y = (this->winch_force)
+        msg.wrench.force.y = (tether_grav_force + this->winch_force)
                              * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
                              * std::sin(this->tether_ground_cur_angle_phi);
         msg.wrench.force.z
-          = (this->winch_force) * std::cos(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta);
-        RCLCPP_INFO_THROTTLE(
-          this->get_logger(), *this->get_clock(), 50,
-          "tether_cur_length: %f, tether_mass: %f, tether_ang_due_to_grav: %f "
-          "tether_grav_force: %f, winch_force: %f, tether_ground_cur_angle_theta: %f, tether_ground_cur_angle_phi: %f",
-          this->tether_cur_length, tether_mass, tether_ang_due_to_grav, tether_grav_force, this->winch_force,
-          this->tether_ground_cur_angle_theta, this->tether_ground_cur_angle_phi);
-        RCLCPP_WARN(this->get_logger(),
-                    "tether_cur_length: %f, tether_mass: %f, tether_ang_due_to_grav: %f, "
-                    "tether_ground_cur_angle_theta: %f, tether_ground_cur_angle_phi: %f",
-                    this->tether_cur_length, tether_mass, tether_ang_due_to_grav, this->tether_ground_cur_angle_theta,
-                    this->tether_ground_cur_angle_phi);
+          = (tether_grav_force + this->winch_force)
+            * std::cos(tether_ang_due_to_grav
+                       + this->tether_ground_cur_angle_theta); // should be pi - theta, then z=-z but same
+        RCLCPP_DEBUG(this->get_logger(),
+                     "tether_cur_length: %f, tether_mass: %f, tether_ang_due_to_grav: %f, "
+                     "tether_ground_cur_angle_theta: %f, tether_ground_cur_angle_phi: %f",
+                     this->tether_cur_length, tether_mass, tether_ang_due_to_grav, this->tether_ground_cur_angle_theta,
+                     this->tether_ground_cur_angle_phi);
       }
     else
       {
@@ -160,10 +168,69 @@ namespace tether_model
         msg.wrench.torque.z = 0.0;
       }
 
+    // Eigen::Quaterniond q_world_drone(this->attitude_latest.q[0], // w
+    //                                  this->attitude_latest.q[1], // x
+    //                                  this->attitude_latest.q[2], // y
+    //                                  this->attitude_latest.q[3]  // z
+    // );
+
+    // Eigen::Quaterniond q_ned(this->attitude_latest.q[0], // w
+    //                          this->attitude_latest.q[1], // x
+    //                          this->attitude_latest.q[2], // y
+    //                          this->attitude_latest.q[3]  // z
+    // );
+
+    // // Create the fixed rotation to convert NED to ENU: RPY(180°, 0°, 90°)
+    // Eigen::AngleAxisd roll180(M_PI, Eigen::Vector3d::UnitX());
+    // Eigen::AngleAxisd pitch0(0.0, Eigen::Vector3d::UnitY());
+    // Eigen::AngleAxisd yaw90(M_PI / 2.0, Eigen::Vector3d::UnitZ());
+
+    // // Combine rotations: R = Yaw * Pitch * Roll (intrinsic rotations)
+    // Eigen::Quaterniond q_rotate = yaw90 * roll180;
+
+    // // Convert PX4 NED to ENU world orientation
+    // Eigen::Quaterniond q_enu = q_rotate * q_ned;
+
+    // // Wrench force from ROS2 (ENU) — already converted from NED manually?
+    tf2::Vector3 F_world(-msg.wrench.force.x, -msg.wrench.force.y, msg.wrench.force.z);
+
+    tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
+                          this->attitude_latest.q[0]);
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(q_ned).getRPY(roll, pitch, yaw);
+
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE, "Drone RPY orientation: [%f, %f, %f]",
+                         roll, pitch, yaw);
+
+    // Transform quaternion (NED to ENU)
+    tf2::Quaternion q_rotate;
+    q_rotate.setRPY(M_PI, 0.0, M_PI / 2.0); // 180° roll, 90° yaw
+    tf2::Quaternion q_enu = q_rotate * q_ned;
+
+    tf2::Matrix3x3 rot_matrix(q_enu);
+    // tf2::Vector3 rotated = tf2::quatRotate(q_enu, F_world);
+
+    // // Rotate force into drone's body frame
+    tf2::Vector3 F_body = F_world * rot_matrix;
+
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Drone Attitude orientation: [%f, %f, %f, %f]",
+                         this->attitude_latest.q[0], this->attitude_latest.q[1], this->attitude_latest.q[2],
+                         this->attitude_latest.q[3]);
+
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Drone ENU orientation: [%f, %f, %f, %f]",
+                         q_ned[0], q_ned[1], q_ned[2], q_ned[3]);
+
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
+                         "Drone force before: [%f, %f, %f] and ENU Force: [%f, %f, %f]", -msg.wrench.force.x,
+                         -msg.wrench.force.y, msg.wrench.force.z, F_body[0], F_body[1], F_body[2]);
+
     // inverse, to match drone's view
-    msg.wrench.force.x = -msg.wrench.force.x;
-    msg.wrench.force.y = -msg.wrench.force.y;
-    msg.wrench.force.z = -msg.wrench.force.z;
+    // msg.wrench.force.x = F_body[0];
+    // msg.wrench.force.y = F_body[1];
+    // msg.wrench.force.z = F_body[2];
+    // msg.wrench.force.x = -msg.wrench.force.x; // felt by drone
+    // msg.wrench.force.y = -msg.wrench.force.y; // felt by drone
+    // msg.wrench.force.z = msg.wrench.force.z;  // felt by drone
 
     RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), 50, "Publishing tether forces [%f, %f, %f]",
                          msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
@@ -182,11 +249,50 @@ namespace tether_model
     float z = -msg.z;
 
     // compute cartesian -> spherical conversion for the angles
-    this->tether_ground_cur_angle_phi = sgn(y) * std::acos(x / std::sqrt(std::pow(x, 2) + std::pow(y, 2)));
-    // std::atan2(std::sqrt(std::pow(msg.x, 2) + std::pow(msg.y, 2)), msg.z);
-    this->tether_ground_cur_angle_theta = std::acos(z / this->dist_gs_drone); // std::atan2(msg.y, msg.x);
+    if(z > 0)
+      {
+        this->tether_ground_cur_angle_theta = std::atan2(std::sqrt(std::pow(x, 2) + std::pow(y, 2)), z);
+      }
+    else if(z < 0)
+      {
+        this->tether_ground_cur_angle_theta = M_PI + std::atan2(std::sqrt(std::pow(x, 2) + std::pow(y, 2)), z);
+      }
+    else if((z = 0.0) && (std::sqrt(std::pow(x, 2) + std::pow(y, 2)) != 0))
+      {
+        this->tether_ground_cur_angle_theta = M_PI / 2.0;
+      }
+    else if((x == 0.0f) && (y == 0.0f) && (z == 0.0f))
+      {
+        this->tether_ground_cur_angle_theta = 0.0; // undefined
+      }
+    // sgn(y) * std::acos(x / std::sqrt(std::pow(x, 2) + std::pow(y, 2)));
+    //  std::atan2(std::sqrt(std::pow(msg.x, 2) + std::pow(msg.y, 2)), msg.z);
+    if(x > 0)
+      {
+        this->tether_ground_cur_angle_phi = std::atan2(y, x);
+      }
+    else if((x < 0) && (y >= 0.0))
+      {
+        this->tether_ground_cur_angle_phi = M_PI + std::atan2(y, x);
+      }
+    else if((x < 0) && (y < 0.0))
+      {
+        this->tether_ground_cur_angle_phi = -M_PI + std::atan2(y, x);
+      }
+    else if((x == 0) && (y > 0.0))
+      {
+        this->tether_ground_cur_angle_phi = M_PI / 2.0;
+      }
+    else if((x == 0) && (y < 0.0))
+      {
+        this->tether_ground_cur_angle_phi = -M_PI / 2.0;
+      }
+    else if((x == 0.0) && (y == 0.0)) // undefined
+      {
+        this->tether_ground_cur_angle_phi = 0.0;
+      }
 
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE,
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
                          "Vehicle rel pos ENU: [%f, %f, %f], [dist_gs_drone, phi, theta]: [%f, %f, %f]", x, y, z,
                          this->dist_gs_drone, this->tether_ground_cur_angle_phi, this->tether_ground_cur_angle_theta);
 
