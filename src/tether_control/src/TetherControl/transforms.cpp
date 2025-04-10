@@ -41,43 +41,4 @@ namespace tether_control
     this->tf_broadcaster_->sendTransform(transform);
   }
 
-  void TetherControl::publish_marker()
-  {
-    // Create and fill the Marker message
-    visualization_msgs::msg::Marker marker;
-
-    marker.header.frame_id = "map"; // Reference frame (use "world" for global coordinates)
-    marker.header.stamp = this->get_clock()->now();
-    marker.ns = "origin";                                // Namespace for the marker
-    marker.id = 0;                                       // Unique ID for the marker
-    marker.type = visualization_msgs::msg::Marker::CUBE; // Shape type (box)
-
-    marker.action = visualization_msgs::msg::Marker::ADD; // Action (add the marker)
-
-    // Set the position of the box at (0, 0, 0)
-    marker.pose.position.x = 0.0;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
-
-    // Set orientation (no rotation)
-    marker.pose.orientation.w = 1.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-
-    // Set the scale (dimensions of the box)
-    marker.scale.x = 0.05; // Length
-    marker.scale.y = 0.05; // Width
-    marker.scale.z = 0.01; // Height
-
-    // Set the color of the box
-    marker.color.r = 0.0f; // Red
-    marker.color.g = 0.0f; // Green
-    marker.color.b = 1.0f; // Blue
-    marker.color.a = 1.0f; // Alpha (transparency)
-
-    // Publish the marker
-    origin_marker_pub_->publish(marker);
-  }
-
 } // namespace tether_control

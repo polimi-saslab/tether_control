@@ -46,7 +46,7 @@ namespace force_plugin
         return;
       }
 
-    // // Read topic name from SDF
+    // Read topic name from SDF
     std::string tetherForceTopic = "/drone/tether_force";
     if(sdf->HasElement("tetherForceTopic"))
       tetherForceTopic = sdf->Get<std::string>("tetherForceTopic");

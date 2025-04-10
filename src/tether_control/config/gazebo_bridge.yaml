@@ -8,8 +8,8 @@
   gz_type_name: gz.msgs.Clock
   direction: GZ_TO_ROS
 
-- ros_topic_name: /tether_lin/base_link/ForceTorque #/tether_lin/base_link/ForceTorque
-  gz_topic_name: /tether_lin/base_link/ForceTorque
+- ros_topic_name: /drone/base_link/ForceTorque
+  gz_topic_name: /drone/base_link/ForceTorque
   ros_type_name: geometry_msgs/msg/Wrench
   gz_type_name: gz.msgs.Wrench
   direction: GZ_TO_ROS

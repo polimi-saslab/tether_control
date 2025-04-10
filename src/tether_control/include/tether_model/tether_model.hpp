@@ -64,6 +64,8 @@ namespace tether_model
     rclcpp::TimerBase::SharedPtr timer_alive_;
     rclcpp::TimerBase::SharedPtr timer_;
 
+    bool is_init_pos = false;
+
     // Model parameters
     float tether_density = 0.0f;     // [kg/m^3] density of the cable
     float tether_diameter = 0.1f;    // [m] radius of the cable
@@ -81,7 +83,6 @@ namespace tether_model
 
     // Condition variables
     bool is_node_alive = true; // always alive
-    std::vector<uint8_t> sim_status = {0, 0, 0, 0, 0, 0, 0, 0};
     DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
 
     px4_msgs::msg::VehicleLocalPosition local_pos_latest;
@@ -91,7 +92,6 @@ namespace tether_model
     void publishTetherForceDisturbations();
 
     // Susbcribers
-    rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr sim_status_sub;
     rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr vehicle_local_position_sub;
 
     // Callback functions

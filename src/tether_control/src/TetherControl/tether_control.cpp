@@ -126,6 +126,7 @@ namespace tether_control
               this->publishVehicleCommand(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6); // Offboard mode
               this->arm();
               this->is_armed = true;
+              // @todo: add condition that checks if was armed successfully, otherwise don't put is_armed to true
             }
           else
             {
@@ -161,7 +162,7 @@ namespace tether_control
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode ATTITUDE");
 
           Eigen::Vector4d controller_output;
-          controller_output[3] = 0.4f; // thrust
+          controller_output[3] = 0.5f; // thrust
           Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
 
           // pidController(controller_output, desired_quat);
@@ -189,8 +190,11 @@ namespace tether_control
         }
 
       // transformation map -> base_link, mostly for visualization purposes
-      transformMapDrone();
-      publish_marker();
+      if(true) // @todo: replace with parameter rviz
+        {
+          transformMapDrone();
+          publish_marker();
+        }
     };
     timer_ = this->create_wall_timer(10ms, timer_callback);
     alive_timer_ = this->create_wall_timer(1000ms, alive_timer_callback);
