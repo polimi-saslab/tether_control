@@ -137,6 +137,11 @@ namespace tether_model
           "tether_grav_force: %f, winch_force: %f, tether_ground_cur_angle_theta: %f, tether_ground_cur_angle_phi: %f",
           this->tether_cur_length, tether_mass, tether_ang_due_to_grav, tether_grav_force, this->winch_force,
           this->tether_ground_cur_angle_theta, this->tether_ground_cur_angle_phi);
+        RCLCPP_WARN(this->get_logger(),
+                    "tether_cur_length: %f, tether_mass: %f, tether_ang_due_to_grav: %f, "
+                    "tether_ground_cur_angle_theta: %f, tether_ground_cur_angle_phi: %f",
+                    this->tether_cur_length, tether_mass, tether_ang_due_to_grav, this->tether_ground_cur_angle_theta,
+                    this->tether_ground_cur_angle_phi);
       }
     else
       {

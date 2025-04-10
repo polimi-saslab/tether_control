@@ -40,7 +40,6 @@
 #include "geometry_msgs/msg/wrench_stamped.hpp"
 #include "std_msgs/msg/u_int8_multi_array.hpp"
 #include "tf2_ros/transform_broadcaster.h"
-#include "visualization_msgs/msg/marker.hpp"
 #include <Eigen/Core>
 #include <geometry_msgs/msg/wrench.hpp>
 #include <px4_msgs/msg/actuator_motors.hpp>
@@ -141,7 +140,6 @@ namespace tether_control
     rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_publisher_;
     rclcpp::Publisher<px4_msgs::msg::ActuatorMotors>::SharedPtr actuators_motors_pub;
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr origin_marker_pub_;
 
     // Publish functions
     void publishOffboardControlMode(const std::vector<bool> &control_modes);
@@ -177,7 +175,6 @@ namespace tether_control
     // Others
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped
     void transformMapDrone();
-    void publish_marker();
   };
 
 } // namespace tether_control

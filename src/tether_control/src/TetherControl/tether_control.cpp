@@ -81,8 +81,6 @@ namespace tether_control
     attitude_pub_ = this->create_publisher<VehicleAttitudeSetpoint>("/fmu/in/vehicle_attitude_setpoint", 10);
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
 
-    origin_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("origin_marker", 10);
-
     // PX4 requires specific QoS, see
     // https://docs.px4.io/main/en/ros2/user_guide.html#compatibility-issues
     rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
@@ -190,10 +188,9 @@ namespace tether_control
         }
 
       // transformation map -> base_link, mostly for visualization purposes
-      if(true) // @todo: replace with parameter rviz
+      if(true) // @todo: replace with ros parameter, i.e rviz_on
         {
           transformMapDrone();
-          publish_marker();
         }
     };
     timer_ = this->create_wall_timer(10ms, timer_callback);

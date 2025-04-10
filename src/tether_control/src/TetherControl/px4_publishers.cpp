@@ -108,7 +108,7 @@ namespace tether_control
   {
     static float angle = 0.0f;        // radians
     static const float radius = 1.2f; // meters
-    static const float step = 0.001f; // radians per call (adjust for speed)
+    static const float step = 0.003f; // radians per call (adjust for speed)
 
     // Advance angle
     angle += step;
