@@ -27,6 +27,12 @@ namespace tether_control
     tf2::Quaternion q_rotate;
     q_rotate.setRPY(M_PI, 0.0, M_PI / 2.0); // 180° roll, 90° yaw
     tf2::Quaternion q_enu = q_rotate * q_ned;
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(q_enu).getRPY(roll, pitch, yaw);
+
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
+                         "Drone ENU orientation (x, y, z, w): [%f, %f, %f, %f], roll: %f, pitch: %f, yaw: %f", q_enu[0],
+                         q_enu[1], q_enu[2], q_enu[3], roll, pitch, yaw);
 
     // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Drone ENU orientation: [%f, %f, %f, %f]",
     //                      q_enu[0], q_enu[1], q_enu[2], q_enu[3]);
@@ -40,15 +46,3 @@ namespace tether_control
   }
 
 } // namespace tether_control
-// correctVehicle rel pos ENU: [0.853906, -2.430498, 1.205541], [dist_gs_drone, phi, theta]: [2.844259,
-// -1.232937, 1.133104]
-// correct :Vehicle rel pos ENU: [1.896133, 1.224420, 0.815073], [dist_gs_drone, phi, theta]: [2.399764,
-// 0.573379, 1.224255] correct  Vehicle rel pos ENU: [2.026398, 0.559712, 0.829273], [dist_gs_drone, phi, theta]:
-// [2.259925, 0.269491, 1.195071]
-// correct: Vehicle rel pos ENU: [1.347961, 1.791242, 0.833599], [dist_gs_drone, phi, theta]: [2.391743,
-// 0.925679, 1.214792]
-
-// faux Vehicle rel pos ENU: [-0.549485, 0.560779, 1.103126], [dist_gs_drone, phi, theta]: [1.353992, 5.487616,
-// 0.618548] faux  Vehicle rel pos ENU: [-0.478126, 0.641120, 1.069241], [dist_gs_drone, phi, theta]:
-// [1.335259, 5.353175, 0.642209] faux Vehicle rel pos ENU: [-0.642168, -0.191742, 1.136107], [dist_gs_drone, phi,
-// theta]: [1.319046, -5.993027, 0.532955]

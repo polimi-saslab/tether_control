@@ -16,6 +16,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(px4_ros_com REQUIRED)
 
 include_directories(
   include 
@@ -59,7 +60,8 @@ ament_target_dependencies(tether_model_node
   sensor_msgs
   std_msgs
   tf2
-  tf2_ros)
+  tf2_ros
+  px4_ros_com)
 
   #########################################################
 
