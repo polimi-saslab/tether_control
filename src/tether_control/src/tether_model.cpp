@@ -172,53 +172,24 @@ namespace tether_model
         msg.wrench.torque.z = 0.0;
       }
 
-    geometry_msgs::msg::WrenchStamped msg_ground = msg; // for debugging
-    msg_ground.header.frame_id = "map";                 // just for debugging
     // Wrench force from ROS2 (ENU) — already converted from NED manually?
     tf2::Vector3 F_world(-msg.wrench.force.x, -msg.wrench.force.y, -msg.wrench.force.z);
-    tf2::Vector3 F_body;
 
     tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
                           this->attitude_latest.q[0]);
 
     tf2::Quaternion q_rotate;
-    q_rotate.setRPY(0.0, 0.0, -M_PI / 2.0);
+    q_rotate.setRPY(M_PI, 0.0, M_PI / 2.0);
     tf2::Quaternion q_enu = q_rotate * q_ned;
     tf2::Matrix3x3 rot(q_enu.inverse());
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(q_enu.inverse()).getRPY(roll, pitch, yaw);
-
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
-                         "Drone ENU orientation (x, y, z, w): [%f, %f, %f, %f], roll: %f, pitch: %f, yaw: %f", q_enu[0],
-                         q_enu[1], q_enu[2], q_enu[3], roll, pitch, yaw);
-    F_body = rot * F_world;
-
-    // double roll, pitch, yaw;
-    // tf2::Matrix3x3(q_ned).getRPY(roll, pitch, yaw);
-
-    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
-    //                      "Drone ENU orientation: [%f, %f, %f, %f], roll: %f, pitch: %f, yaw: %f", q_enu[0], q_enu[1],
-    //                      q_enu[2], q_enu[3], roll, pitch, yaw);
-
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Force base: [%f, %f, %f],  drone: [%f, %f, %f]",
-                         msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z, F_body[0], F_body[1], F_body[2]);
-    // Drone force ENU: [4.771431, 4.708706, 5.097277], NED: [-4.771431, -4.708706, -5.097277], rotated:
-    // [-1.892589, 4.475628, 6.878049]
-
-    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
-    //                      "Drone orientation (x, y, z, w) NED: [%f, %f, %f, %f], ENU: [%f, %f, %f, %f]", q_ned[0],
-    //                      q_ned[1], q_ned[2], q_ned[3], q_enu[0], q_enu[1], q_enu[2], q_enu[3]);
+    tf2::Vector3 F_body = rot * F_world;
 
     // inverse, to match drone's view
     msg.wrench.force.x = F_body[0];
     msg.wrench.force.y = F_body[1];
     msg.wrench.force.z = F_body[2];
-    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
-    //                      "Drone felt force before: [%f, %f, %f], felt force sent: [%f, %f, %f]", msg.wrench.force.x,
-    //                      msg.wrench.force.y, msg.wrench.force.z, F_body[0], F_body[1], F_body[2]);
 
     this->tether_force_pub_->publish(msg);
-    // this->tether_force_pub_->publish(msg_ground);
   }
 
   void TetherModel::vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg)

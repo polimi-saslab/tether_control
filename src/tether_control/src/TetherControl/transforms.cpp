@@ -25,22 +25,13 @@ namespace tether_control
 
     // Transform quaternion (NED to ENU)
     tf2::Quaternion q_rotate;
-    q_rotate.setRPY(M_PI, 0.0, M_PI / 2.0); // 180° roll, 90° yaw
+    q_rotate.setRPY(M_PI, 0.0, M_PI / 2.0);
     tf2::Quaternion q_enu = q_rotate * q_ned;
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(q_enu).getRPY(roll, pitch, yaw);
 
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
-                         "Drone ENU orientation (x, y, z, w): [%f, %f, %f, %f], roll: %f, pitch: %f, yaw: %f", q_enu[0],
-                         q_enu[1], q_enu[2], q_enu[3], roll, pitch, yaw);
-
-    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Drone ENU orientation: [%f, %f, %f, %f]",
-    //                      q_enu[0], q_enu[1], q_enu[2], q_enu[3]);
-
-    transform.transform.rotation.x = q_enu[1];
-    transform.transform.rotation.y = q_enu[2];
-    transform.transform.rotation.z = q_enu[3];
-    transform.transform.rotation.w = q_enu[0];
+    transform.transform.rotation.x = q_enu[0];
+    transform.transform.rotation.y = q_enu[1];
+    transform.transform.rotation.z = q_enu[2];
+    transform.transform.rotation.w = q_enu[3];
 
     this->tf_broadcaster_->sendTransform(transform);
   }
