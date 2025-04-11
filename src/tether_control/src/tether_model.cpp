@@ -168,61 +168,35 @@ namespace tether_model
         msg.wrench.torque.z = 0.0;
       }
 
-    // Eigen::Quaterniond q_world_drone(this->attitude_latest.q[0], // w
-    //                                  this->attitude_latest.q[1], // x
-    //                                  this->attitude_latest.q[2], // y
-    //                                  this->attitude_latest.q[3]  // z
-    // );
-
-    // Eigen::Quaterniond q_ned(this->attitude_latest.q[0], // w
-    //                          this->attitude_latest.q[1], // x
-    //                          this->attitude_latest.q[2], // y
-    //                          this->attitude_latest.q[3]  // z
-    // );
-
-    // // Create the fixed rotation to convert NED to ENU: RPY(180°, 0°, 90°)
-    // Eigen::AngleAxisd roll180(M_PI, Eigen::Vector3d::UnitX());
-    // Eigen::AngleAxisd pitch0(0.0, Eigen::Vector3d::UnitY());
-    // Eigen::AngleAxisd yaw90(M_PI / 2.0, Eigen::Vector3d::UnitZ());
-
-    // // Combine rotations: R = Yaw * Pitch * Roll (intrinsic rotations)
-    // Eigen::Quaterniond q_rotate = yaw90 * roll180;
-
-    // // Convert PX4 NED to ENU world orientation
-    // Eigen::Quaterniond q_enu = q_rotate * q_ned;
-
-    // // Wrench force from ROS2 (ENU) — already converted from NED manually?
-    tf2::Vector3 F_world(-msg.wrench.force.x, -msg.wrench.force.y, msg.wrench.force.z);
+    // Wrench force from ROS2 (ENU) — already converted from NED manually?
+    tf2::Vector3 F_world(-msg.wrench.force.x, -msg.wrench.force.y, -msg.wrench.force.z);
+    tf2::Vector3 F_body;
 
     tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
                           this->attitude_latest.q[0]);
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(q_ned).getRPY(roll, pitch, yaw);
+    tf2::Quaternion q_rotate;                 // q_ned:    roll: -0.21281, pitch: -0.116072, yaw: 1.878763
+    q_rotate.setRPY(0.0, 0.0, -M_PI / 2.0);   // q_rotate: roll: 3.141593, pitch: -0.000000, yaw: 1.570796
+    tf2::Quaternion q_enu = q_rotate * q_ned; // q_enu:    roll: 2.860715, pitch: 0.122150, yaw: -0.404609
 
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROTTLE, "Drone RPY orientation: [%f, %f, %f]",
-                         roll, pitch, yaw);
+    F_body = tf2::quatRotate(q_enu.inverse(), F_world);
 
-    // Transform quaternion (NED to ENU)
-    tf2::Quaternion q_rotate;
-    q_rotate.setRPY(M_PI, 0.0, M_PI / 2.0); // 180° roll, 90° yaw
-    tf2::Quaternion q_enu = q_rotate * q_ned;
+    // double roll, pitch, yaw;
+    // tf2::Matrix3x3(q_ned).getRPY(roll, pitch, yaw);
 
-    tf2::Matrix3x3 rot_matrix(q_enu);
-    // tf2::Vector3 rotated = tf2::quatRotate(q_enu, F_world);
+    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
+    //                      "Drone ENU orientation: [%f, %f, %f, %f], roll: %f, pitch: %f, yaw: %f", q_enu[0], q_enu[1],
+    //                      q_enu[2], q_enu[3], roll, pitch, yaw);
 
-    // // Rotate force into drone's body frame
-    tf2::Vector3 F_body = F_world * rot_matrix;
+    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
+    //                      "Drone force ENU: [%f, %f, %f], NED: [%f, %f, %f], rotated: [%f, %f, %f]",
+    //                      msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z, F_world[0], F_world[1],
+    //                      F_world[2], F_body[0], F_body[1], F_body[2]);
+    // Drone force ENU: [4.771431, 4.708706, 5.097277], NED: [-4.771431, -4.708706, -5.097277], rotated:
+    // [-1.892589, 4.475628, 6.878049]
 
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Drone Attitude orientation: [%f, %f, %f, %f]",
-                         this->attitude_latest.q[0], this->attitude_latest.q[1], this->attitude_latest.q[2],
-                         this->attitude_latest.q[3]);
-
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Drone ENU orientation: [%f, %f, %f, %f]",
-                         q_ned[0], q_ned[1], q_ned[2], q_ned[3]);
-
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
-                         "Drone force before: [%f, %f, %f] and ENU Force: [%f, %f, %f]", -msg.wrench.force.x,
-                         -msg.wrench.force.y, msg.wrench.force.z, F_body[0], F_body[1], F_body[2]);
+    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
+    //                      "Drone orientation (x, y, z, w) NED: [%f, %f, %f, %f], ENU: [%f, %f, %f, %f]", q_ned[0],
+    //                      q_ned[1], q_ned[2], q_ned[3], q_enu[0], q_enu[1], q_enu[2], q_enu[3]);
 
     // inverse, to match drone's view
     // msg.wrench.force.x = F_body[0];
@@ -230,10 +204,12 @@ namespace tether_model
     // msg.wrench.force.z = F_body[2];
     // msg.wrench.force.x = -msg.wrench.force.x; // felt by drone
     // msg.wrench.force.y = -msg.wrench.force.y; // felt by drone
-    // msg.wrench.force.z = msg.wrench.force.z;  // felt by drone
+    // msg.wrench.force.z = -msg.wrench.force.z; // felt by drone
 
-    RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), 50, "Publishing tether forces [%f, %f, %f]",
-                         msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
+    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
+    //                      "Drone felt force before: [%f, %f, %f], felt force sent: [%f, %f, %f]", msg.wrench.force.x,
+    //                      msg.wrench.force.y, msg.wrench.force.z, F_body[0], F_body[1], F_body[2]);
+
     this->tether_force_pub_->publish(msg);
   }
 
@@ -248,51 +224,10 @@ namespace tether_model
     float y = msg.x;
     float z = -msg.z;
 
-    // compute cartesian -> spherical conversion for the angles
-    if(z > 0)
-      {
-        this->tether_ground_cur_angle_theta = std::atan2(std::sqrt(std::pow(x, 2) + std::pow(y, 2)), z);
-      }
-    else if(z < 0)
-      {
-        this->tether_ground_cur_angle_theta = M_PI + std::atan2(std::sqrt(std::pow(x, 2) + std::pow(y, 2)), z);
-      }
-    else if((z = 0.0) && (std::sqrt(std::pow(x, 2) + std::pow(y, 2)) != 0))
-      {
-        this->tether_ground_cur_angle_theta = M_PI / 2.0;
-      }
-    else if((x == 0.0f) && (y == 0.0f) && (z == 0.0f))
-      {
-        this->tether_ground_cur_angle_theta = 0.0; // undefined
-      }
-    // sgn(y) * std::acos(x / std::sqrt(std::pow(x, 2) + std::pow(y, 2)));
-    //  std::atan2(std::sqrt(std::pow(msg.x, 2) + std::pow(msg.y, 2)), msg.z);
-    if(x > 0)
-      {
-        this->tether_ground_cur_angle_phi = std::atan2(y, x);
-      }
-    else if((x < 0) && (y >= 0.0))
-      {
-        this->tether_ground_cur_angle_phi = M_PI + std::atan2(y, x);
-      }
-    else if((x < 0) && (y < 0.0))
-      {
-        this->tether_ground_cur_angle_phi = -M_PI + std::atan2(y, x);
-      }
-    else if((x == 0) && (y > 0.0))
-      {
-        this->tether_ground_cur_angle_phi = M_PI / 2.0;
-      }
-    else if((x == 0) && (y < 0.0))
-      {
-        this->tether_ground_cur_angle_phi = -M_PI / 2.0;
-      }
-    else if((x == 0.0) && (y == 0.0)) // undefined
-      {
-        this->tether_ground_cur_angle_phi = 0.0;
-      }
+    this->tether_ground_cur_angle_theta = std::atan2(std::sqrt(std::pow(x, 2) + std::pow(y, 2)), z);
+    this->tether_ground_cur_angle_phi = std::atan2(y, x);
 
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100,
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
                          "Vehicle rel pos ENU: [%f, %f, %f], [dist_gs_drone, phi, theta]: [%f, %f, %f]", x, y, z,
                          this->dist_gs_drone, this->tether_ground_cur_angle_phi, this->tether_ground_cur_angle_theta);
 

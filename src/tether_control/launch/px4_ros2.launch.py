@@ -63,7 +63,6 @@ def launch_setup(context, *args, **kwargs):
         package='tether_control',
         executable='tether_model_node',
         parameters=[tether_config_path],
-        # arguments=['--ros-args', '--log-level', 'DEBUG'],
         output='screen',
         emulate_tty=True # coloured RCLCPP log, in case RCUTILS_COLORIZED_OUTPUT not set
     )

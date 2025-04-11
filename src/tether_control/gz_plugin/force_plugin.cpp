@@ -88,6 +88,9 @@ namespace force_plugin
 
   void ForcePlugin::OnWrenchMsg(const geometry_msgs::msg::WrenchStamped::SharedPtr msg)
   {
+    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("force_plugin"), *node_->get_clock(), 100,
+                         "Received wrench: [%f, %f, %f], [%f, %f, %f]", msg->wrench.force.x, msg->wrench.force.y,
+                         msg->wrench.force.z, msg->wrench.torque.x, msg->wrench.torque.y, msg->wrench.torque.z);
     // Store force and torque directly in Vector3d
     force_.Set(msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z);
     torque_.Set(msg->wrench.torque.x, msg->wrench.torque.y, msg->wrench.torque.z);
