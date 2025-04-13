@@ -107,7 +107,7 @@ namespace tether_control
   void TetherControl::publishTrajectorySetpointCircle()
   {
     static float angle = 0.0f;        // radians
-    static const float radius = 1.2f; // meters
+    static const float radius = 2.5f; // meters
     static const float step = 0.003f; // radians per call (adjust for speed)
 
     // Advance angle

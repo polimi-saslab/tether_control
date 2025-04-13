@@ -25,7 +25,7 @@ namespace tether_control
 
     // Transform quaternion (NED to ENU)
     // tf2::Quaternion q_init;
-    // q_init.setRPY(0.0, 0.0, -M_PI / 2.0);
+    // // q_init.setRPY(0.0, 0.0, -M_PI / 2.0);
     tf2::Quaternion q_rotate; // = q_init * q_ned;
     q_rotate.setRPY(0.0, 0.0, -M_PI / 2.0);
     tf2::Quaternion q_enu = q_rotate * q_ned;

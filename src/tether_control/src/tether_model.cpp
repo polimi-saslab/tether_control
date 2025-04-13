@@ -185,12 +185,12 @@ namespace tether_model
     tf2::Vector3 F_body = rot * F_world;
 
     // inverse, to match drone's view
-    // msg.wrench.force.x = F_body[0]; // account for the rotation of 90deg
-    // msg.wrench.force.y = F_body[1];
-    // msg.wrench.force.z = F_body[2];
-    msg.wrench.force.x = -msg.wrench.force.x; // account for the rotation of 90deg
-    msg.wrench.force.y = -msg.wrench.force.y;
-    msg.wrench.force.z = -msg.wrench.force.z;
+    msg.wrench.force.x = F_body[0]; // account for the rotation of 90deg
+    msg.wrench.force.y = F_body[1];
+    msg.wrench.force.z = F_body[2];
+    // msg.wrench.force.x = -msg.wrench.force.x; // account for the rotation of 90deg
+    // msg.wrench.force.y = -msg.wrench.force.y;
+    // msg.wrench.force.z = -msg.wrench.force.z;
 
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Publishing tether force in %f %f %f",
                          msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
