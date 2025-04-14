@@ -4,8 +4,8 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
     tethered: true
     uav_type: "MC" # possibilities: MC, VTOL, VTOL-TAILSITTER
     control:
-      control_mode: "TETHER_FORCE_REACTIONS"
-      hoverThrust: 0.75 # empirically determined, thrust to hover in sim
+      control_mode: "ATTITUDE"
+      hoverThrust: 0.5 # empirically determined, thrust to hover in sim
       attThrustKp: 0.5 # empirically determined, Kp for attitude control
       attThrustKd: 0.05 # empirically determined, Kd for attitude control
     model:

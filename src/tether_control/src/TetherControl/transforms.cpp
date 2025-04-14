@@ -22,11 +22,7 @@ namespace tether_control
 
     tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
                           this->attitude_latest.q[0]);
-
-    // Transform quaternion (NED to ENU)
-    // tf2::Quaternion q_init;
-    // // q_init.setRPY(0.0, 0.0, -M_PI / 2.0);
-    tf2::Quaternion q_rotate; // = q_init * q_ned;
+    tf2::Quaternion q_rotate;
     q_rotate.setRPY(0.0, 0.0, -M_PI / 2.0);
     tf2::Quaternion q_enu = q_rotate * q_ned;
 

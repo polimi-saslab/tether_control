@@ -56,7 +56,7 @@ namespace tether_control
     this->tethered = this->declare_parameter<bool>("tethered", true);
     this->uav_type = this->declare_parameter<std::string>("uav_type", "MC");
     control_mode_s = this->declare_parameter<std::string>("control.control_mode", "ATTITUDE");
-    this->hoverThrust = this->declare_parameter<float>("control.hoverThrust", 0.7f);
+    this->hoverThrust = this->declare_parameter<float>("control.hoverThrust", 0.5f);
     this->attThrustKp = this->declare_parameter<float>("control.attThrustKp", 0.5f);
     this->attThrustKd = this->declare_parameter<float>("control.attThrustKd", 0.05f);
     // Model
@@ -181,7 +181,9 @@ namespace tether_control
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode ATTITUDE");
 
           Eigen::Vector4d controller_output;
-          controller_output[3] = 0.5f; // thrust
+          this->hoverThrust
+            = this->get_parameter("control.hoverThrust").as_double(); // or as_float(), depending on version
+          controller_output[3] = this->hoverThrust;                   // thrust
           Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
 
           // pidController(controller_output, desired_quat);

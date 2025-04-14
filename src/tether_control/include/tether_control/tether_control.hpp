@@ -118,9 +118,9 @@ namespace tether_control
 
     ////////////////// Parameters //////////////////
     // Control
-    std::string uav_type = "MC";         // [MC, VTOL, VTOL_TAILSITTER]
-    bool tethered = false;               // [true, false] true if the drone is tethered
-    float hoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover, determined by simulation
+    std::string uav_type = "MC"; // [MC, VTOL, VTOL_TAILSITTER]
+    bool tethered = false;       // [true, false] true if the drone is tethered
+    double hoverThrust = 0.37;   // [N] thrust to be applied to drone to hover, determined by simulation
     float gravComp = 9.81f;
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;
@@ -140,7 +140,7 @@ namespace tether_control
     float last_er_accel_z = 0.0f;
     // Model variables
     DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
-    float winch_force = 3.0f;                // [N] tension force felt by the winch
+    float winch_force = 0.5f;                // [N] tension force felt by the winch
     float dist_gs_drone = 0.0f;              // [m] distance between drone and ground station
     float tether_cur_length = dist_gs_drone; // [m] current length of the cable, assuming straight line atm
     float tether_drone_cur_angle = 0.0f;     // [rad] angle between the cable and the drone
