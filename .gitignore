@@ -2,3 +2,7 @@ build/
 log/
 install/
 .vscode/
+
+#ros2 bag outputs
+tether_control_bag/
+*.csv
