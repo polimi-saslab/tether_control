@@ -2,6 +2,7 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
   ros__parameters:
     gravComp: 9.81 # z acceleration to compensate for hover
     tethered: true
+    debug: true
     uav_type: "MC" # possibilities: MC, VTOL, VTOL-TAILSITTER
     control:
       control_mode: "ATTITUDE" #TETHER_FORCE_REACTIONS, ATTITUDE

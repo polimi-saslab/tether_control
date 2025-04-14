@@ -6,6 +6,7 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction, ExecuteProcess
 from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 import os
+import time
 from tempfile import NamedTemporaryFile
 
 def generate_launch_description():
@@ -25,6 +26,12 @@ def launch_setup(context, *args, **kwargs):
     bridge_config_file = LaunchConfiguration('bridge_config_file').perform(context)
     tether_config_file = LaunchConfiguration('tether_config_file').perform(context)
     package_name = LaunchConfiguration('package_name').perform(context)
+
+    timestr = time.strftime("%Y%m%d%H%M%S")
+    topic_results_dir = f'topic_results_{timestr}'
+    print(f'Creating batch results directory: {topic_results_dir}')
+    os.makedirs(os.path.join(get_package_share_directory(package_name),topic_results_dir))
+    rosbag2_dir = 'rosbag2'
 
     bridge_config_path = os.path.join(
         get_package_share_directory(package_name),
@@ -62,7 +69,7 @@ def launch_setup(context, *args, **kwargs):
             output='screen')
 
     ros2_bag_process = ExecuteProcess(
-        cmd=['ros2', 'bag', 'record', '-o', 'tether_control_bag',
+        cmd=['ros2', 'bag', 'record', '-o', os.path.join(get_package_share_directory(package_name), topic_results_dir, rosbag2_dir),
              '/drone/tether_force', '/fmu/out/vehicle_attitude'],
         output='screen'
     )

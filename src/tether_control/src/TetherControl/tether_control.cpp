@@ -54,6 +54,7 @@ namespace tether_control
     // Control
     this->gravComp = this->declare_parameter<float>("gravComp", 9.81f);
     this->tethered = this->declare_parameter<bool>("tethered", true);
+    this->debug_mode = this->declare_parameter<bool>("debug_mode", true);
     this->uav_type = this->declare_parameter<std::string>("uav_type", "MC");
     control_mode_s = this->declare_parameter<std::string>("control.control_mode", "ATTITUDE");
     this->hoverThrust = this->declare_parameter<float>("control.hoverThrust", 0.5f);
@@ -72,6 +73,7 @@ namespace tether_control
     RCLCPP_INFO(this->get_logger(), "------------------- CONTROL --------------------");
     RCLCPP_INFO(this->get_logger(), "gravComp: %f", this->gravComp);
     RCLCPP_INFO(this->get_logger(), "tethered: %i", this->tethered);
+    RCLCPP_INFO(this->get_logger(), "debug_mode: %i", this->debug_mode);
     RCLCPP_INFO(this->get_logger(), "uav_type: %s", this->uav_type.c_str());
     RCLCPP_INFO(this->get_logger(), "control_mode: %s", control_mode_s.c_str());
     RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
@@ -96,6 +98,8 @@ namespace tether_control
     actuators_motors_pub = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
     attitude_pub_ = this->create_publisher<VehicleAttitudeSetpoint>("/fmu/in/vehicle_attitude_setpoint", 10);
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
+    if(this->debug_mode)
+      tether_force_viz_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force_viz", 10);
 
     // PX4 requires specific QoS, see
     // https://docs.px4.io/main/en/ros2/user_guide.html#compatibility-issues
@@ -150,7 +154,7 @@ namespace tether_control
         }
 
       // transformation map -> base_link, mostly for visualization purposes
-      if(true) // @todo: replace with ros parameter, i.e rviz_on
+      if(this->debug_mode) // @todo: replace with ros parameter, i.e rviz_on
         {
           transformMapDrone();
         }

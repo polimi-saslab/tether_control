@@ -12,19 +12,11 @@ namespace tether_control
   void TetherControl::vehicleAttitudeSubCb(const px4_msgs::msg::VehicleAttitude msg)
   {
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
-    this->attitude_latest = msg;
     Eigen::Quaterniond q = px4_ros_com::frame_transforms::utils::quaternion::array_to_eigen_quat(msg.q);
     Eigen::Quaterniond enu_q = px4_ros_com::frame_transforms::ned_to_enu_orientation(q);
-    // Eigen::Matrix3d rot = enu_q.toRotationMatrix();
     this->attitude_quat_latest = enu_q; // correct quaternion
-    // Extract RPY (ZYX convention → yaw, pitch, roll)
-    // Eigen::Vector3d rpy = rot.eulerAngles(2, 1, 0); // Yaw (Z), Pitch (Y), Roll (X)
 
-    // RCLCPP_INFO(this->get_logger(), "RPY (rad): Roll: %.3f, Pitch: %.3f, Yaw: %.3f", rpy[2], rpy[1],
-    //             rpy[0]); // Roll = X, Pitch = Y, Yaw = Z
     RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT ATTITUDE DATA --------------");
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "Orientation: %f %f %f %f", msg.q[0], msg.q[1],
-                         msg.q[2], msg.q[3]);
   }
 
   void TetherControl::vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg)

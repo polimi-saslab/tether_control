@@ -55,7 +55,7 @@ namespace tether_control
         float tether_grav_force
           = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
 
-        // assuming spherical coordinates for ENU frame:
+        // assuming spherical coordinates for ENU frame:, inversing for drone pov
         msg.wrench.force.x = -(tether_grav_force + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
                              * std::cos(this->tether_ground_cur_angle_phi);
         msg.wrench.force.y = -(tether_grav_force + this->winch_force)
@@ -88,10 +88,19 @@ namespace tether_control
         msg.wrench.torque.z = 0.0;
       }
 
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Publishing tether force in %f %f %f",
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Publishing tether force in %f %f %f",
                          msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
 
     this->tether_force_pub_->publish(msg);
+    if(this->debug_mode)
+      {
+        // inversion so that rviz makes sense
+        geometry_msgs::msg::WrenchStamped msg_viz = msg;
+        msg_viz.wrench.force.x = -msg.wrench.force.x;
+        msg_viz.wrench.force.y = -msg.wrench.force.y;
+        msg_viz.wrench.force.z = -msg.wrench.force.z;
+        this->tether_force_viz_pub_->publish(msg_viz);
+      }
   }
 
 } // namespace tether_control

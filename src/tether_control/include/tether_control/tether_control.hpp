@@ -116,6 +116,7 @@ namespace tether_control
     bool prechecks_passed = false;
     bool is_init_pos = false;
     bool is_node_alive = false;
+    bool debug_mode = true; // when true, enables rviz2 visualisation / transformations (force vector, etc)
 
     ////////////////// Parameters //////////////////
     // Control
@@ -156,7 +157,6 @@ namespace tether_control
     // PX4 subscription data
     Eigen::Quaterniond attitude_quat_latest;
 
-    px4_msgs::msg::VehicleAttitude attitude_latest;       // @todo: just need to stock important var imo
     px4_msgs::msg::VehicleLocalPosition local_pos_latest; // @todo: just need to stock important var imo
     geometry_msgs::msg::Wrench drone_tether_force_latest;
     sensor_msgs::msg::Imu drone_imu_latest;
@@ -170,6 +170,8 @@ namespace tether_control
     rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_publisher_;
     rclcpp::Publisher<px4_msgs::msg::ActuatorMotors>::SharedPtr actuators_motors_pub;
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
+    // pub for visualisation / debugging purposes
+    rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_viz_pub_;
 
     // Publish functions
     void publishOffboardControlMode(const std::vector<bool> &control_modes);
