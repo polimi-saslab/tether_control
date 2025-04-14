@@ -61,6 +61,12 @@ def launch_setup(context, *args, **kwargs):
             cmd=['MicroXRCEAgent', 'udp4', '-p', '8888'],
             output='screen')
 
+    ros2_bag_process = ExecuteProcess(
+        cmd=['ros2', 'bag', 'record', '-o', 'tether_control_bag',
+             '/drone/tether_force', '/fmu/out/vehicle_attitude'],
+        output='screen'
+    )
+
     # px4_process = ExecuteProcess(
     #     cmd=['make', 'px4_sitl', 'gz_tethered_lin'],
     #     cwd='/home/yannis/Sas_lab/PX4-Autopilot',
@@ -71,5 +77,6 @@ def launch_setup(context, *args, **kwargs):
         udp_process,
         # px4_process,
         gazebo_bridge_node,
-        tether_control_node
+        tether_control_node,
+        ros2_bag_process
     ]

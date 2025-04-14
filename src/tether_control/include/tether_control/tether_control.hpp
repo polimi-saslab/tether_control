@@ -121,7 +121,7 @@ namespace tether_control
     // Control
     std::string uav_type = "MC"; // [MC, VTOL, VTOL_TAILSITTER]
     bool tethered = false;       // [true, false] true if the drone is tethered
-    double hoverThrust = 0.37;   // [N] thrust to be applied to drone to hover, determined by simulation
+    float hoverThrust = 0.37;    // [N] thrust to be applied to drone to hover, determined by simulation
     float gravComp = 9.81f;
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;

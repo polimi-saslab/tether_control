@@ -20,8 +20,8 @@ namespace tether_control
     // Extract RPY (ZYX convention → yaw, pitch, roll)
     // Eigen::Vector3d rpy = rot.eulerAngles(2, 1, 0); // Yaw (Z), Pitch (Y), Roll (X)
 
-    RCLCPP_INFO(this->get_logger(), "RPY (rad): Roll: %.3f, Pitch: %.3f, Yaw: %.3f", rpy[2], rpy[1],
-                rpy[0]); // Roll = X, Pitch = Y, Yaw = Z
+    // RCLCPP_INFO(this->get_logger(), "RPY (rad): Roll: %.3f, Pitch: %.3f, Yaw: %.3f", rpy[2], rpy[1],
+    //             rpy[0]); // Roll = X, Pitch = Y, Yaw = Z
     RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT ATTITUDE DATA --------------");
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "Orientation: %f %f %f %f", msg.q[0], msg.q[1],
                          msg.q[2], msg.q[3]);
