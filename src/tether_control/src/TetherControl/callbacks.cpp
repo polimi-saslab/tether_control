@@ -15,7 +15,7 @@ namespace tether_control
     this->attitude_latest = msg;
     Eigen::Quaterniond q = px4_ros_com::frame_transforms::utils::quaternion::array_to_eigen_quat(msg.q);
     Eigen::Quaterniond enu_q = px4_ros_com::frame_transforms::ned_to_enu_orientation(q);
-    Eigen::Matrix3d rot = enu_q.toRotationMatrix();
+    // Eigen::Matrix3d rot = enu_q.toRotationMatrix();
     this->attitude_quat_latest = enu_q; // correct quaternion
     // Extract RPY (ZYX convention → yaw, pitch, roll)
     // Eigen::Vector3d rpy = rot.eulerAngles(2, 1, 0); // Yaw (Z), Pitch (Y), Roll (X)

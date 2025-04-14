@@ -20,16 +20,20 @@ namespace tether_control
     transform.transform.translation.y = this->local_pos_latest.x;  // North → Y
     transform.transform.translation.z = -this->local_pos_latest.z; // Down → -Z
 
-    tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
-                          this->attitude_latest.q[0]);
-    tf2::Quaternion q_rotate;
-    q_rotate.setRPY(0.0, 0.0, -M_PI / 2.0);
-    tf2::Quaternion q_enu = q_rotate * q_ned;
+    Eigen::Quaterniond q
+      = px4_ros_com::frame_transforms::utils::quaternion::array_to_eigen_quat(this->attitude_latest.q);
+    Eigen::Quaterniond enu_q = px4_ros_com::frame_transforms::ned_to_enu_orientation(q);
 
-    transform.transform.rotation.x = q_enu[0];
-    transform.transform.rotation.y = q_enu[1];
-    transform.transform.rotation.z = q_enu[2];
-    transform.transform.rotation.w = q_enu[3];
+    // tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
+    //                       this->attitude_latest.q[0]);
+    // tf2::Quaternion q_rotate;
+    // q_rotate.setRPY(0.0, 0.0, -M_PI / 2.0);
+    // tf2::Quaternion q_enu = q_rotate * q_ned;
+
+    transform.transform.rotation.x = enu_q.x();
+    transform.transform.rotation.y = enu_q.y();
+    transform.transform.rotation.z = enu_q.z();
+    transform.transform.rotation.w = enu_q.w();
 
     this->tf_broadcaster_->sendTransform(transform);
   }

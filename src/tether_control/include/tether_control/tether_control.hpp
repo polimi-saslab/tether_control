@@ -139,6 +139,7 @@ namespace tether_control
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
     std::array<float, 3> starting_pos = {0.0f, 0.0f, -2.0f};
     float last_er_accel_z = 0.0f;
+    float attR, attP, attY; // roll, pitch, yaw
     // Model variables
     DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
     float winch_force = 1.5f;                // [N] tension force felt by the winch

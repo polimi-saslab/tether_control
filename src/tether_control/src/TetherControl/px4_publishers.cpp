@@ -107,7 +107,7 @@ namespace tether_control
   void TetherControl::publishTrajectorySetpointCircle()
   {
     static float angle = 0.0f;        // radians
-    static const float radius = 4.5f; // meters
+    static const float radius = 2.5f; // meters
     static const float step = 0.003f; // radians per call (adjust for speed)
 
     // Advance angle
@@ -118,7 +118,7 @@ namespace tether_control
       }
 
     TrajectorySetpoint msg{};
-    msg.position = {radius * cos(angle), radius * sin(angle), -1.0}; //{2.0, 2.0, -2.0};
+    msg.position = {radius * cos(angle), radius * sin(angle), -2.0}; //{2.0, 2.0, -2.0};
     msg.yaw = -3.14;
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     RCLCPP_INFO_THROTTLE(get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Publishing circles: [%f, %f, %f]",

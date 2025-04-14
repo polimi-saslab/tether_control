@@ -56,13 +56,13 @@ namespace tether_control
           = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:
-        msg.wrench.force.x = (tether_grav_force + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
+        msg.wrench.force.x = -(tether_grav_force + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
                              * std::cos(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.y = (tether_grav_force + this->winch_force)
+        msg.wrench.force.y = -(tether_grav_force + this->winch_force)
                              * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
                              * std::sin(this->tether_ground_cur_angle_phi);
         msg.wrench.force.z
-          = (tether_grav_force + this->winch_force)
+          = -(tether_grav_force + this->winch_force)
             * std::cos(tether_ang_due_to_grav
                        + this->tether_ground_cur_angle_theta); // should be pi - theta, then z=-z but same
         RCLCPP_DEBUG(this->get_logger(),
@@ -87,27 +87,6 @@ namespace tether_control
         msg.wrench.torque.y = 0.0;
         msg.wrench.torque.z = 0.0;
       }
-
-    // Wrench force from ROS2 (ENU) — already converted from NED manually?
-    tf2::Vector3 F_world(-msg.wrench.force.x, -msg.wrench.force.y, -msg.wrench.force.z);
-
-    tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
-                          this->attitude_latest.q[0]);
-
-    // account for init yaw rot of drone
-    tf2::Quaternion q_rotate;
-    q_rotate.setRPY(0.0, 0.0, -M_PI / 2.0);
-    tf2::Quaternion q_enu = q_rotate * q_ned;
-    tf2::Matrix3x3 rot(q_enu.inverse());
-    tf2::Vector3 F_body = rot * F_world;
-
-    // inverse, to match drone's view
-    msg.wrench.force.x = F_body[0]; // account for the rotation of 90deg
-    msg.wrench.force.y = F_body[1];
-    msg.wrench.force.z = F_body[2];
-    // msg.wrench.force.x = -msg.wrench.force.x; // account for the rotation of 90deg
-    // msg.wrench.force.y = -msg.wrench.force.y;
-    // msg.wrench.force.z = -msg.wrench.force.z;
 
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Publishing tether force in %f %f %f",
                          msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);

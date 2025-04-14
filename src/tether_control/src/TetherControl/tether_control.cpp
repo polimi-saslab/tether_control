@@ -59,6 +59,9 @@ namespace tether_control
     this->hoverThrust = this->declare_parameter<float>("control.hoverThrust", 0.5f);
     this->attThrustKp = this->declare_parameter<float>("control.attThrustKp", 0.5f);
     this->attThrustKd = this->declare_parameter<float>("control.attThrustKd", 0.05f);
+    this->attR = this->declare_parameter<float>("control.attR", 0.0f);
+    this->attP = this->declare_parameter<float>("control.attP", 0.0f);
+    this->attY = this->declare_parameter<float>("control.attY", 0.0f);
     // Model
     std::string disturb_mode_s = this->declare_parameter<std::string>("model.disturb_mode", "STRONG_SIDE");
     this->tether_init_length = this->declare_parameter<float>("model.tether_init_length", 1.0f);
@@ -181,10 +184,12 @@ namespace tether_control
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode ATTITUDE");
 
           Eigen::Vector4d controller_output;
-          this->hoverThrust
-            = this->get_parameter("control.hoverThrust").as_double(); // or as_float(), depending on version
-          controller_output[3] = this->hoverThrust;                   // thrust
-          Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
+          this->hoverThrust = this->get_parameter("control.hoverThrust").as_double();
+          controller_output[3] = this->hoverThrust; // thrust
+          Eigen::Quaterniond desired_quat = px4_ros_com::frame_transforms::utils::quaternion::quaternion_from_euler(
+            this->get_parameter("control.attR").as_double(), this->get_parameter("control.attP").as_double(),
+            this->get_parameter("control.attY").as_double()); // roll, pitch, yaw
+          // Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
 
           // pidController(controller_output, desired_quat);
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ,
