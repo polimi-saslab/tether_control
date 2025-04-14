@@ -23,6 +23,7 @@ include_directories(
   SYSTEM ${Eigen3_INCLUDE_DIRS})
 
 set(TETHER_CONTROL_SOURCES
+  src/TetherControl/flight_control.cpp
   src/TetherControl/tether_model.cpp
   src/TetherControl/tether_control.cpp
   src/TetherControl/utils.cpp

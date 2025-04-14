@@ -108,7 +108,15 @@ namespace tether_control
   private:
     // Timers
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::TimerBase::SharedPtr alive_timer_;
+    rclcpp::TimerBase::SharedPtr timer_alive;
+    rclcpp::TimerBase::SharedPtr timer_log;
+
+    void timer_log_callback();
+    void timer_callback();
+    void timer_alive_callback();
+
+    rclcpp::CallbackGroup::SharedPtr callback_group_main;
+    rclcpp::CallbackGroup::SharedPtr callback_group_log;
 
     // Generic condition variables
     std::string control_mode_s;
