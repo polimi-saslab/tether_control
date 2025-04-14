@@ -52,7 +52,7 @@ namespace tether_control
         // need to rotate vector from world to ENU, since publishing tether_force
         // in ENU frame
 
-        float tether_grav_force
+        this->tether_grav_force
           = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:, inversing for drone pov

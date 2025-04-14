@@ -50,9 +50,10 @@ namespace tether_control
 
     // Init parameters
     // Control
+    this->log_mode = this->declare_parameter<float>("log_mode", true);
+    this->debug_mode = this->declare_parameter<bool>("debug_mode", true);
     this->gravComp = this->declare_parameter<float>("gravComp", 9.81f);
     this->tethered = this->declare_parameter<bool>("tethered", true);
-    this->debug_mode = this->declare_parameter<bool>("debug_mode", true);
     this->uav_type = this->declare_parameter<std::string>("uav_type", "MC");
     control_mode_s = this->declare_parameter<std::string>("control.control_mode", "ATTITUDE");
     this->hoverThrust = this->declare_parameter<float>("control.hoverThrust", 0.5f);
@@ -69,9 +70,10 @@ namespace tether_control
 
     RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
     RCLCPP_INFO(this->get_logger(), "------------------- CONTROL --------------------");
+    RCLCPP_INFO(this->get_logger(), "log_mode: %i", this->log_mode);
+    RCLCPP_INFO(this->get_logger(), "debug_mode: %i", this->debug_mode);
     RCLCPP_INFO(this->get_logger(), "gravComp: %f", this->gravComp);
     RCLCPP_INFO(this->get_logger(), "tethered: %i", this->tethered);
-    RCLCPP_INFO(this->get_logger(), "debug_mode: %i", this->debug_mode);
     RCLCPP_INFO(this->get_logger(), "uav_type: %s", this->uav_type.c_str());
     RCLCPP_INFO(this->get_logger(), "control_mode: %s", control_mode_s.c_str());
     RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
@@ -253,16 +255,19 @@ namespace tether_control
       }
   }
 
+  // timer handling the publishers of sensor data, for analysis
   void TetherControl::timer_log_callback()
   {
-    if(this->is_node_alive)
+    if(!this->log_enabled)
       {
-        RCLCPP_INFO_ONCE(this->get_logger(), "NODE ALIVE");
         return;
       }
-    else
+
+    if(this->is_node_alive)
       {
-        RCLCPP_INFO(this->get_logger(), "Drone not alive ...");
+        // to publish:
+        // now: dist_gs_drone,tether_ground_cur_angle_theta, tether_ground_cur_angle_phi, tether_grav_force
+        // when implemented: tether_cur_length, winch_force
       }
   }
 

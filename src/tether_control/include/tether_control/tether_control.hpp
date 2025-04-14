@@ -124,6 +124,7 @@ namespace tether_control
     bool prechecks_passed = false;
     bool is_init_pos = false;
     bool is_node_alive = false;
+    bool log_mode = true;   // whether we want to publish sensor data, to then analyze via ros2 bag
     bool debug_mode = true; // when true, enables rviz2 visualisation / transformations (force vector, etc)
 
     ////////////////// Parameters //////////////////
@@ -144,8 +145,6 @@ namespace tether_control
     ////////////////// Variables //////////////////
     // Control variables
     ControlMode control_mode = ControlMode::TETHER_FORCE_REACTIONS;
-    std::vector<bool> position_control = {true, false, false, false, false};
-    std::vector<bool> direct_actuator_control = {false, false, false, false, true};
     std::array<float, 3> starting_pos = {0.0f, 0.0f, -2.0f};
     float last_er_accel_z = 0.0f;
     float attR, attP, attY; // roll, pitch, yaw
@@ -158,9 +157,8 @@ namespace tether_control
     float tether_ground_cur_angle_theta;     // [rad] angle between the cable and the ground plane
     float tether_ground_cur_angle_phi;       // [rad] angle between the projection of the cable on ground and x
 
-    // variables for tether force reactions mode
-    size_t counter_ = 0;
-    size_t counter_time = 0;
+    // Sensor data
+    float tether_grav_force;
 
     // PX4 subscription data
     Eigen::Quaterniond attitude_quat_latest;
@@ -206,9 +204,6 @@ namespace tether_control
     // Controller functions
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
     void pidController(Eigen::Vector4d &controller_output); //, Eigen::Quaterniond &desired_quat
-
-    // Tether model functions
-    void computeTetherForceVec();
 
     // Utils
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
