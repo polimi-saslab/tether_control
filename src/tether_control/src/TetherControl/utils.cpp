@@ -64,4 +64,29 @@ namespace tether_control
       }
   }
 
+  void TetherControl::convertDisturbMode(std::string disturb_mode_s)
+  {
+    if(disturb_mode_s == "STRONG_SIDE")
+      {
+        this->disturb_mode = DisturbationMode::STRONG_SIDE;
+      }
+    else if(disturb_mode_s == "CIRCULAR")
+      {
+        this->disturb_mode = DisturbationMode::CIRCULAR;
+      }
+    else if(disturb_mode_s == "TET_GRAV_FIL_ANG")
+      {
+        this->disturb_mode = DisturbationMode::TET_GRAV_FIL_ANG;
+      }
+    else if(disturb_mode_s == "NONE")
+      {
+        this->disturb_mode = DisturbationMode::NONE;
+      }
+    else
+      {
+        RCLCPP_ERROR(this->get_logger(), "Disturbation mode not defined, setting to NONE");
+        this->disturb_mode = DisturbationMode::NONE;
+      }
+  }
+
 } // namespace tether_control

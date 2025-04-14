@@ -26,8 +26,6 @@ def launch_setup(context, *args, **kwargs):
     tether_config_file = LaunchConfiguration('tether_config_file').perform(context)
     package_name = LaunchConfiguration('package_name').perform(context)
 
-    pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
-
     bridge_config_path = os.path.join(
         get_package_share_directory(package_name),
         "config",
@@ -59,14 +57,6 @@ def launch_setup(context, *args, **kwargs):
         emulate_tty=True # coloured RCLCPP log, in case RCUTILS_COLORIZED_OUTPUT not set
     )
 
-    tether_model_node = Node(
-        package='tether_control',
-        executable='tether_model_node',
-        parameters=[tether_config_path],
-        output='screen',
-        emulate_tty=True # coloured RCLCPP log, in case RCUTILS_COLORIZED_OUTPUT not set
-    )
-
     udp_process = ExecuteProcess(
             cmd=['MicroXRCEAgent', 'udp4', '-p', '8888'],
             output='screen')
@@ -81,6 +71,5 @@ def launch_setup(context, *args, **kwargs):
         udp_process,
         # px4_process,
         gazebo_bridge_node,
-        tether_control_node,
-        tether_model_node
+        tether_control_node
     ]

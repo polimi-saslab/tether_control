@@ -23,6 +23,7 @@ include_directories(
   SYSTEM ${Eigen3_INCLUDE_DIRS})
 
 set(TETHER_CONTROL_SOURCES
+  src/TetherControl/tether_model.cpp
   src/TetherControl/tether_control.cpp
   src/TetherControl/utils.cpp
   src/TetherControl/callbacks.cpp
@@ -45,23 +46,6 @@ ament_target_dependencies(tether_control_node
   tf2
   tf2_ros
   visualization_msgs)
-
-####################### TETHER MODEL #######################
-
-add_executable(tether_model_node
-  src/tether_model.cpp
-)
-
-ament_target_dependencies(tether_model_node
-  Eigen3
-  geometry_msgs
-  px4_msgs
-  rclcpp 
-  sensor_msgs
-  std_msgs
-  tf2
-  tf2_ros
-  px4_ros_com)
 
   #########################################################
 
@@ -117,7 +101,6 @@ install(
 install(
   TARGETS
   tether_control_node
-  tether_model_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

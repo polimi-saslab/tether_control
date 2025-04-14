@@ -51,25 +51,38 @@ namespace tether_control
     std::string control_mode_s;
 
     // Init parameters
-    this->uav_type = this->declare_parameter<std::string>("uav_type", "MC");
-    this->tethered = this->declare_parameter<bool>("tethered", true);
-    control_mode_s = this->declare_parameter<std::string>("control_mode", "ATTITUDE");
-    this->hoverThrust = this->declare_parameter<float>("hoverThrust", 0.7f);
+    // Control
     this->gravComp = this->declare_parameter<float>("gravComp", 9.81f);
-    this->attThrustKp = this->declare_parameter<float>("attThrustKp", 0.5f);
-    this->attThrustKd = this->declare_parameter<float>("attThrustKd", 0.05f);
+    this->tethered = this->declare_parameter<bool>("tethered", true);
+    this->uav_type = this->declare_parameter<std::string>("uav_type", "MC");
+    control_mode_s = this->declare_parameter<std::string>("control.control_mode", "ATTITUDE");
+    this->hoverThrust = this->declare_parameter<float>("control.hoverThrust", 0.7f);
+    this->attThrustKp = this->declare_parameter<float>("control.attThrustKp", 0.5f);
+    this->attThrustKd = this->declare_parameter<float>("control.attThrustKd", 0.05f);
+    // Model
+    std::string disturb_mode_s = this->declare_parameter<std::string>("model.disturb_mode", "STRONG_SIDE");
+    this->tether_init_length = this->declare_parameter<float>("model.tether_init_length", 1.0f);
+    this->tether_diameter = this->declare_parameter<float>("model.tether_diameter", 0.005f);
+    this->tether_density = this->declare_parameter<float>("model.tether_density", 970.0f);
 
     RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
-    RCLCPP_INFO(this->get_logger(), "control_mode: %s", control_mode_s.c_str());
-    RCLCPP_INFO(this->get_logger(), "uav_type: %s", this->uav_type.c_str());
-    RCLCPP_INFO(this->get_logger(), "tethered: %i", this->tethered);
-    RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
+    RCLCPP_INFO(this->get_logger(), "------------------- CONTROL --------------------");
     RCLCPP_INFO(this->get_logger(), "gravComp: %f", this->gravComp);
+    RCLCPP_INFO(this->get_logger(), "tethered: %i", this->tethered);
+    RCLCPP_INFO(this->get_logger(), "uav_type: %s", this->uav_type.c_str());
+    RCLCPP_INFO(this->get_logger(), "control_mode: %s", control_mode_s.c_str());
+    RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
     RCLCPP_INFO(this->get_logger(), "attThrustKp: %f", this->attThrustKp);
     RCLCPP_INFO(this->get_logger(), "attThrustKd: %f", this->attThrustKd);
+    RCLCPP_INFO(this->get_logger(), "------------------- MODEL --------------------");
+    RCLCPP_INFO(this->get_logger(), "disturb_mode: %s", disturb_mode_s.c_str());
+    RCLCPP_INFO(this->get_logger(), "tether_init_length: %f", this->tether_init_length);
+    RCLCPP_INFO(this->get_logger(), "tether_diameter: %f", this->tether_diameter);
+    RCLCPP_INFO(this->get_logger(), "tether_density: %f", this->tether_density);
     RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
     convertControlMode(control_mode_s);
+    convertDisturbMode(disturb_mode_s);
 
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
@@ -133,14 +146,22 @@ namespace tether_control
             }
         }
 
+      // transformation map -> base_link, mostly for visualization purposes
+      if(true) // @todo: replace with ros parameter, i.e rviz_on
+        {
+          transformMapDrone();
+        }
+
       // drone armed
       if(!this->is_init_pos) // is alive, armed but not in position
         {
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode INIT");
           publishOffboardControlMode({true, false, false, false, false});
           publishTrajectorySetpoint();
+          return;
         }
-      else if(this->control_mode == ControlMode::POSITION)
+
+      if(this->control_mode == ControlMode::POSITION)
         {
           RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode POSITION");
           publishOffboardControlMode({true, false, false, false, false});
@@ -187,10 +208,24 @@ namespace tether_control
           publishAttitudeSetpoint(Eigen::Vector4d::Zero(), Eigen::Quaterniond::Identity());
         }
 
-      // transformation map -> base_link, mostly for visualization purposes
-      if(true) // @todo: replace with ros parameter, i.e rviz_on
+      if(this->tethered)
         {
-          transformMapDrone();
+          if(this->disturb_mode == DisturbationMode::STRONG_SIDE)
+            {
+              publishTetherForceDisturbations();
+            }
+          else if(this->disturb_mode == DisturbationMode::CIRCULAR)
+            {
+              publishTetherForceDisturbations();
+            }
+          else if(this->disturb_mode == DisturbationMode::TET_GRAV_FIL_ANG)
+            {
+              publishTetherForceDisturbations();
+            }
+          else if(this->disturb_mode == DisturbationMode::NONE)
+            {
+              RCLCPP_WARN(this->get_logger(), "Unknown disturbation mode, defaulted to NONE");
+            }
         }
     };
     timer_ = this->create_wall_timer(10ms, timer_callback);
@@ -251,53 +286,6 @@ namespace tether_control
     controller_output[3] = thrust;
 
     this->last_er_accel_z = cur_er_accel_z; // update error
-  }
-
-  void TetherControl::publishTetherForceDisturbations()
-  {
-    geometry_msgs::msg::WrenchStamped msg;
-
-    msg.header.stamp = this->now();
-    msg.header.frame_id = "base_link";
-
-    switch(counter_ % 4)
-      {
-      case 0:
-        msg.wrench.force.x = -7.0;
-        msg.wrench.force.y = 0.0;
-        msg.wrench.force.z = -3.0;
-        RCLCPP_INFO_ONCE(this->get_logger(), "Publishing tether force in %f %f %f", msg.wrench.force.x,
-                         msg.wrench.force.y, msg.wrench.force.z);
-        counter_time++;
-        break;
-      case 1:
-        msg.wrench.force.x = 0.0;
-        msg.wrench.force.y = -5.0;
-        msg.wrench.force.z = -2.0;
-        RCLCPP_INFO_ONCE(this->get_logger(), "Publishing tether force in %f %f %f", msg.wrench.force.x,
-                         msg.wrench.force.y, msg.wrench.force.z);
-        counter_time++;
-        break;
-      case 2:
-        msg.wrench.force.x = 0.0;
-        msg.wrench.force.y = 0.0;
-        msg.wrench.force.z = -3.0;
-        RCLCPP_INFO_ONCE(this->get_logger(), "Publishing tether force in %f %f %f", msg.wrench.force.x,
-                         msg.wrench.force.y, msg.wrench.force.z);
-        counter_time++;
-        break;
-      case 3:
-        msg.wrench.force.x = -4.0;
-        msg.wrench.force.y = -4.0;
-        msg.wrench.force.z = -4.0;
-        RCLCPP_INFO_ONCE(this->get_logger(), "Publishing tether force in %f %f %f", msg.wrench.force.x,
-                         msg.wrench.force.y, msg.wrench.force.z);
-        counter_time++;
-        break;
-      }
-    if((counter_time % 500) == 0)
-      counter_++;
-    tether_force_pub_->publish(msg);
   }
 
 } // namespace tether_control

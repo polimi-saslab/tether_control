@@ -1,0 +1,118 @@
+#include "tether_control/tether_control.hpp"
+
+using namespace std::chrono;
+
+namespace tether_control
+{
+  void TetherControl::publishTetherForceDisturbations()
+  {
+    geometry_msgs::msg::WrenchStamped msg;
+
+    msg.header.stamp = this->now();
+    msg.header.frame_id = "base_link";
+
+    if(this->disturb_mode == DisturbationMode::CIRCULAR)
+      {
+        static double theta = 0.0; // angle for circular motion
+        double radius = 1.5;       // radius of the circle (i.e., force magnitude in XY)
+        double d_theta = 0.01;     // increment angle each call (controls speed)
+
+        msg.wrench.force.x = radius * std::cos(theta);
+        msg.wrench.force.y = radius * std::sin(theta);
+        msg.wrench.force.z = -5.0; // Constant downward force
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
+
+        theta += d_theta;
+        if(theta > 2 * M_PI)
+          theta -= 2 * M_PI;
+      }
+    else if(this->disturb_mode == DisturbationMode::STRONG_SIDE)
+      {
+        msg.wrench.force.x = -2.5;
+        msg.wrench.force.y = -2.5;
+        msg.wrench.force.z = -2.5;
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
+      }
+    else if(this->disturb_mode == DisturbationMode::TET_GRAV_FIL_ANG)
+      {
+        // Specific model for tether force
+        this->tether_cur_length = this->dist_gs_drone; // easy way atm
+
+        float tether_mass
+          = this->tether_density * M_PI * std::pow(this->tether_diameter / 2, 2) * this->tether_cur_length; // [kg]
+        float tether_ang_due_to_grav
+          = 1 / 2
+            * (tether_mass * this->gravity_const * std::sin(this->tether_ground_cur_angle_theta)
+               / this->winch_force); // == 1/2(M_t*g*cos(beta)/T), from eq (39) of The Influence of
+        // Tether Sag on Airborne Wind Energy Generation by F. Trevisi
+        // need to rotate vector from world to ENU, since publishing tether_force
+        // in ENU frame
+
+        float tether_grav_force
+          = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
+
+        // assuming spherical coordinates for ENU frame:
+        msg.wrench.force.x = (tether_grav_force + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
+                             * std::cos(this->tether_ground_cur_angle_phi);
+        msg.wrench.force.y = (tether_grav_force + this->winch_force)
+                             * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
+                             * std::sin(this->tether_ground_cur_angle_phi);
+        msg.wrench.force.z
+          = (tether_grav_force + this->winch_force)
+            * std::cos(tether_ang_due_to_grav
+                       + this->tether_ground_cur_angle_theta); // should be pi - theta, then z=-z but same
+        RCLCPP_DEBUG(this->get_logger(),
+                     "tether_cur_length: %f, tether_mass: %f, tether_ang_due_to_grav: %f, "
+                     "tether_ground_cur_angle_theta: %f, tether_ground_cur_angle_phi: %f",
+                     this->tether_cur_length, tether_mass, tether_ang_due_to_grav, this->tether_ground_cur_angle_theta,
+                     this->tether_ground_cur_angle_phi);
+      }
+    else
+      {
+        RCLCPP_WARN_THROTTLE(get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Disturbation mode not defined");
+      }
+
+    // sanity check
+    if(std::isnan(msg.wrench.force.x) || std::isnan(msg.wrench.force.y) || std::isnan(msg.wrench.force.z))
+      {
+        RCLCPP_WARN(this->get_logger(), "Nan values in msg force, sanitizing to 0");
+        msg.wrench.force.x = 0.0;
+        msg.wrench.force.y = 0.0;
+        msg.wrench.force.z = 0.0;
+        msg.wrench.torque.x = 0.0;
+        msg.wrench.torque.y = 0.0;
+        msg.wrench.torque.z = 0.0;
+      }
+
+    // Wrench force from ROS2 (ENU) — already converted from NED manually?
+    tf2::Vector3 F_world(-msg.wrench.force.x, -msg.wrench.force.y, -msg.wrench.force.z);
+
+    tf2::Quaternion q_ned(this->attitude_latest.q[1], this->attitude_latest.q[2], this->attitude_latest.q[3],
+                          this->attitude_latest.q[0]);
+
+    // account for init yaw rot of drone
+    tf2::Quaternion q_rotate;
+    q_rotate.setRPY(0.0, 0.0, -M_PI / 2.0);
+    tf2::Quaternion q_enu = q_rotate * q_ned;
+    tf2::Matrix3x3 rot(q_enu.inverse());
+    tf2::Vector3 F_body = rot * F_world;
+
+    // inverse, to match drone's view
+    msg.wrench.force.x = F_body[0]; // account for the rotation of 90deg
+    msg.wrench.force.y = F_body[1];
+    msg.wrench.force.z = F_body[2];
+    // msg.wrench.force.x = -msg.wrench.force.x; // account for the rotation of 90deg
+    // msg.wrench.force.y = -msg.wrench.force.y;
+    // msg.wrench.force.z = -msg.wrench.force.z;
+
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 100, "Publishing tether force in %f %f %f",
+                         msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
+
+    this->tether_force_pub_->publish(msg);
+  }
+
+} // namespace tether_control

@@ -71,7 +71,7 @@ using namespace px4_msgs::msg;
 #define X500_MASS = 2.0f + 4 * 0.016076923076923075f // [kg] mass of the drone + 4 motors
 #define HOVER_FORCE = X500_MASS * 9.81f // [N] force to be applied to drone to hover, determined by simulation
 #define LOG_THROT_FREQ 1000             // [Hz] frequency at which to log throttle values (normal)
-#define LOG_THROT_FREQ_S 100            // [Hz] frequency at which to log throttle values (speedy)
+#define LOG_THROT_FREQ_LOW 100          // [Hz] frequency at which to log throttle values (speedy)
 
 namespace tether_control
 {
@@ -85,6 +85,7 @@ namespace tether_control
     void arm();
     void disarm();
 
+    // available control modes
     enum class ControlMode
     {
       POSITION,
@@ -94,32 +95,57 @@ namespace tether_control
       NONE
     };
 
+    // model names, atm only TET_GRAV_FIL_ANG
+    enum class DisturbationMode
+    {
+      NONE,
+      STRONG_SIDE,
+      CIRCULAR,
+      TET_GRAV_FIL_ANG // tether grav force + angle according to Filippo's paper
+    };
+
   private:
     // Timers
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::TimerBase::SharedPtr alive_timer_;
 
-    // Condition variables
+    // Generic condition variables
     std::string control_mode_s;
     bool is_armed = false;
     bool prechecks_passed = false;
     bool is_init_pos = false;
     bool is_node_alive = false;
 
-    // Parameters
+    ////////////////// Parameters //////////////////
+    // Control
     std::string uav_type = "MC";         // [MC, VTOL, VTOL_TAILSITTER]
     bool tethered = false;               // [true, false] true if the drone is tethered
     float hoverThrust = MC_HOVER_THRUST; // [N] thrust to be applied to drone to hover, determined by simulation
     float gravComp = 9.81f;
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;
+    // Model
+    float tether_density = 0.0f;     // [kg/m^3] density of the cable
+    float tether_diameter = 0.1f;    // [m] radius of the cable
+    float tether_init_length = 1.0f; // [m] length of the cable
+    float gravity_const = 9.81f;     // [m/s^2] gravity constant
+    ///////////////////////////////////////////////
 
+    ////////////////// Variables //////////////////
     // Control variables
     ControlMode control_mode = ControlMode::TETHER_FORCE_REACTIONS;
     std::vector<bool> position_control = {true, false, false, false, false};
     std::vector<bool> direct_actuator_control = {false, false, false, false, true};
     std::array<float, 3> starting_pos = {0.0f, 0.0f, -2.0f};
     float last_er_accel_z = 0.0f;
+    // Model variables
+    DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
+    float winch_force = 3.0f;                // [N] tension force felt by the winch
+    float dist_gs_drone = 0.0f;              // [m] distance between drone and ground station
+    float tether_cur_length = dist_gs_drone; // [m] current length of the cable, assuming straight line atm
+    float tether_drone_cur_angle = 0.0f;     // [rad] angle between the cable and the drone
+    float tether_ground_cur_angle_theta;     // [rad] angle between the cable and the ground plane
+    float tether_ground_cur_angle_phi;       // [rad] angle between the projection of the cable on ground and x
 
     // variables for tether force reactions mode
     size_t counter_ = 0;
@@ -167,10 +193,14 @@ namespace tether_control
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
     void pidController(Eigen::Vector4d &controller_output); //, Eigen::Quaterniond &desired_quat
 
+    // Tether model functions
+    void computeTetherForceVec();
+
     // Utils
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
     double get_pitch_from_imu(const geometry_msgs::msg::Quaternion &quat);
     void convertControlMode(std::string control_mode_s);
+    void convertDisturbMode(std::string disturb_mode_s);
 
     // Others
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped
