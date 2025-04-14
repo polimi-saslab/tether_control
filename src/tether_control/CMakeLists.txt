@@ -40,12 +40,14 @@ ament_target_dependencies(tether_control_node
   Eigen3
   geometry_msgs
   px4_msgs
+  px4_ros_com
   rclcpp 
   sensor_msgs
   std_msgs
   tf2
   tf2_ros
-  visualization_msgs)
+  visualization_msgs
+  )
 
   #########################################################
 

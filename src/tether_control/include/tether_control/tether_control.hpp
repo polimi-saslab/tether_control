@@ -41,6 +41,7 @@
 #include "std_msgs/msg/u_int8_multi_array.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include <Eigen/Core>
+#include <frame_transforms.h>
 #include <geometry_msgs/msg/wrench.hpp>
 #include <px4_msgs/msg/actuator_motors.hpp>
 #include <px4_msgs/msg/offboard_control_mode.hpp>
@@ -140,7 +141,7 @@ namespace tether_control
     float last_er_accel_z = 0.0f;
     // Model variables
     DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
-    float winch_force = 0.5f;                // [N] tension force felt by the winch
+    float winch_force = 1.5f;                // [N] tension force felt by the winch
     float dist_gs_drone = 0.0f;              // [m] distance between drone and ground station
     float tether_cur_length = dist_gs_drone; // [m] current length of the cable, assuming straight line atm
     float tether_drone_cur_angle = 0.0f;     // [rad] angle between the cable and the drone
@@ -152,6 +153,8 @@ namespace tether_control
     size_t counter_time = 0;
 
     // PX4 subscription data
+    Eigen::Quaterniond attitude_quat_latest;
+
     px4_msgs::msg::VehicleAttitude attitude_latest;       // @todo: just need to stock important var imo
     px4_msgs::msg::VehicleLocalPosition local_pos_latest; // @todo: just need to stock important var imo
     geometry_msgs::msg::Wrench drone_tether_force_latest;
