@@ -59,13 +59,17 @@ namespace tether_control
       {
         this->control_mode = ControlMode::TETHER_FORCE_REACTIONS;
       }
+    else if(control_mode_s == "CUSTOM")
+      {
+        this->control_mode = ControlMode::CUSTOM;
+      }
     else if(control_mode_s == "NONE")
       {
         this->control_mode = ControlMode::NONE;
       }
     else
       {
-        RCLCPP_ERROR(this->get_logger(), "Disturbation mode not defined, setting to NONE");
+        RCLCPP_ERROR(this->get_logger(), "Control mode not defined, setting to NONE");
         this->control_mode = ControlMode::NONE;
       }
   }

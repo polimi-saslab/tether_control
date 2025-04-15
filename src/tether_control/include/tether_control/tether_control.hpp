@@ -69,11 +69,15 @@ using namespace std::chrono_literals;
 using namespace px4_msgs::msg;
 
 #define GPS_POS_ACCEPT_RANGE 0.1f // [m] acceptable range for GPS position
-#define MC_HOVER_THRUST 0.73f     // [N] thrust to be applied to drone to hover, determined by simulation
-#define X500_MASS = 2.0f + 4 * 0.016076923076923075f // [kg] mass of the drone + 4 motors
-#define HOVER_FORCE = X500_MASS * 9.81f // [N] force to be applied to drone to hover, determined by simulation
-#define LOG_THROT_FREQ 1000             // [Hz] frequency at which to log throttle values (normal)
-#define LOG_THROT_FREQ_LOW 100          // [Hz] frequency at which to log throttle values (speedy)
+#define GRAVITY_FORCE 9.81
+#define MC_HOVER_THRUST 0.73f // [N] thrust to be applied to drone to hover, determined by simulation
+#define X500_MASS (2.0f + 4 * 0.016076923076923075f) // [kg] mass of the x500 drone + 4 motors
+#define TAROT680_MASS (1.513f + 0.1f + 5 * 0.005f)   // [kg] mass of the tarot base_link drone + 4 motors
+#define WEIGHT_X500 (X500_MASS * GRAVITY_FORCE) // [N] force to be applied to drone to hover, determined by simulation
+#define WEIGHT_TAROT                                                                                                   \
+  (TAROT680_MASS * GRAVITY_FORCE) // [N] force to be applied to drone to hover, determined by simulation
+#define LOG_THROT_FREQ 1000       // [Hz] frequency at which to log throttle values (normal)
+#define LOG_THROT_FREQ_LOW 100    // [Hz] frequency at which to log throttle values (speedy)
 
 namespace tether_control
 {
@@ -94,6 +98,7 @@ namespace tether_control
       ATTITUDE,
       DIRECT_ACTUATORS,
       TETHER_FORCE_REACTIONS,
+      CUSTOM,
       NONE
     };
 
@@ -132,7 +137,8 @@ namespace tether_control
     // Control
     std::string uav_type = "MC"; // [MC, VTOL, VTOL_TAILSITTER]
     bool tethered = false;       // [true, false] true if the drone is tethered
-    float hoverThrust = 0.37;    // [N] thrust to be applied to drone to hover, determined by simulation
+    float hoverThrust
+      = 0.5; // [N] thrust to be applied to drone to hover, determined by simulation, if no tether -> 0.35
     float gravComp = 9.81f;
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;
@@ -141,6 +147,8 @@ namespace tether_control
     float tether_diameter = 0.1f;    // [m] radius of the cable
     float tether_init_length = 1.0f; // [m] length of the cable
     float winch_diameter = 0.1f;
+    Eigen::Vector3d tether_force_vec{0.0f, 0.0f, 0.0f};
+    float thrust_force_constant = 0.0f;
     ///////////////////////////////////////////////
 
     ////////////////// Variables //////////////////
@@ -151,7 +159,7 @@ namespace tether_control
     float attR, attP, attY; // roll, pitch, yaw
     // Model variables
     DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
-    float winch_force = 1.5f;            // [N] tension force felt by the winch
+    float winch_force = 1.0f;            // [N] tension force felt by the winch, do not set to 0.0
     float dist_gs_drone = 0.0f;          // [m] distance between drone and ground station
     float tether_cur_length = 1.0;       // [m] current length of the cable, assuming straight line atm
     float tether_drone_cur_angle = 0.0f; // [rad] angle between the cable and the drone
@@ -201,16 +209,17 @@ namespace tether_control
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr winch_joint_state_sub;
 
     // Callback functions
-    void droneImuSubCb(const sensor_msgs::msg::Imu msg);
+    // void droneImuSubCb(const sensor_msgs::msg::Imu msg);
     void vehicleAttitudeSubCb(const px4_msgs::msg::VehicleAttitude msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
-    void vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg);
+    // void vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg);
     void winchJointStateSubCb(const sensor_msgs::msg::JointState msg);
 
     // Controller functions
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);
     void pidController(Eigen::Vector4d &controller_output); //, Eigen::Quaterniond &desired_quat
+    void forceCompensation(Eigen::Vector4d &controller_output, Eigen::Quaterniond &desired_quat);
 
     // Utils
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);

@@ -58,6 +58,33 @@ namespace tether_control
     actuators_motors_pub->publish(act_motors);
   }
 
+  void TetherControl::forceCompensation(Eigen::Vector4d &controller_output, Eigen::Quaterniond &desired_quat)
+  {
+    Eigen::Vector3d force_to_compensate = this->tether_force_vec + Eigen::Vector3d(0.0, 0.0, WEIGHT_TAROT);
+    controller_output[3] = force_to_compensate.norm() / this->thrust_force_constant;
+
+    // compute quaternion to rotate drone s.t. its Z axis points towards it (NED frame)
+    Eigen::Vector3d target_z = -force_to_compensate.normalized();
+    Eigen::Vector3d body_z = -Eigen::Vector3d::UnitZ();
+
+    double dot = body_z.dot(target_z);
+    if(dot > 0.9999)
+      {
+        desired_quat = Eigen::Quaterniond::Identity(); // already aligned
+      }
+    else if(dot < -0.9999)
+      {
+        // Opposite direction: 180 deg rotation around X or Y
+        desired_quat = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()));
+      }
+    else
+      {
+        Eigen::Vector3d axis = body_z.cross(target_z).normalized();
+        double angle = std::acos(dot);
+        desired_quat = Eigen::Quaterniond(Eigen::AngleAxisd(angle, axis));
+      }
+  }
+
   // @todo: create class for PID controller, cleaner
   void TetherControl::pidController(Eigen::Vector4d &controller_output) //, Eigen::Quaterniond &desired_quat
   {

@@ -6,6 +6,8 @@ using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace px4_msgs::msg;
 
+float winch_length = 0.0f;
+
 namespace tether_control
 {
 
@@ -14,7 +16,10 @@ namespace tether_control
     // storing local pos, to convert to lambda function if we don't do anything more with the sub
     Eigen::Quaterniond q = px4_ros_com::frame_transforms::utils::quaternion::array_to_eigen_quat(msg.q);
     Eigen::Quaterniond enu_q = px4_ros_com::frame_transforms::ned_to_enu_orientation(q);
-    this->attitude_quat_latest = enu_q; // correct quaternion
+
+    Eigen::Quaterniond roll_correction(Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitY()));
+    Eigen::Quaterniond enu_q_fixed = roll_correction * enu_q;
+    this->attitude_quat_latest = enu_q_fixed;
 
     RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT ATTITUDE DATA --------------");
   }
@@ -58,43 +63,17 @@ namespace tether_control
       }
   }
 
-  void TetherControl::vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg)
-  {
-    // storing local pos, to convert to lambda function if we don't do anything more with the sub
-    this->drone_tether_force_latest = msg;
-
-    // plotting once just for info
-    RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT TETHER FORCE DATA --------------");
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Force: %f %f %f, Torque: %f %f %f", msg.force.x,
-                         msg.force.y, msg.force.z, msg.torque.x, msg.torque.y, msg.torque.z);
-  }
-
-  void TetherControl::droneImuSubCb(const sensor_msgs::msg::Imu msg)
-  {
-    // storing local pos, to convert to lambda function if we don't do anything more with the sub
-    this->drone_imu_latest = msg;
-
-    // plotting once just for info
-    RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT IMU DATA --------------");
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "ACCEL Z IMU: %f ", msg.linear_acceleration.z);
-    // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
-    //  "Orientation: %f %f %f %f, angular velocity: %f %f %f, lin_accel: %f %f %f", msg.orientation.w,
-    //  msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.angular_velocity.x,
-    //  msg.angular_velocity.y, msg.angular_velocity.z, msg.linear_acceleration.x,
-    //  msg.linear_acceleration.y, msg.linear_acceleration.z);
-  }
-
   void TetherControl::winchJointStateSubCb(const sensor_msgs::msg::JointState msg)
   {
     // would get winch joint position and update tether length out
     float delta_angle_rad = this->winch_angle_latest - msg.position[0];
     float delta_tether_length = this->winch_diameter / 2.0 * delta_angle_rad; // r*delta_theta
-    // this->tether_cur_length += delta_tether_length;
+    winch_length += delta_tether_length;
     this->winch_angle_latest = msg.position[0];
 
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ,
-                         "Winch pos: %f, delta angle: %f, delta tether length: %f", msg.position[0], delta_angle_rad,
-                         delta_tether_length);
+                         "Winch pos: %f, delta angle: %f, delta tether length: %f, winch length: %f", msg.position[0],
+                         delta_angle_rad, delta_tether_length, winch_length);
   }
 
 } // namespace tether_control

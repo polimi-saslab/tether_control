@@ -3,11 +3,12 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
     log_mode: true
     debug_mode: true
     gravComp: 9.81 # z acceleration to compensate for hover, to move to a define
-    tethered: true
+    tethered: false
     uav_type: "MC" # possibilities: MC, VTOL, VTOL-TAILSITTER
     control:
-      control_mode: "ATTITUDE" #TETHER_FORCE_REACTIONS, ATTITUDE
-      hoverThrust: 0.5 # empirically determined, thrust to hover in sim
+      control_mode: "CUSTOM" #TETHER_FORCE_REACTIONS, ATTITUDE, THRUST_IDENTIF
+      hoverThrust: 0.3733 # empirically determined, thrust to hover in sim 0.3733
+      thrust_force_constant: 7.17420305 # empirically: k = F/thrust = 1.638/0.3733 = 7.17420305
       attThrustKp: 0.5 # empirically determined, Kp for attitude control
       attThrustKd: 0.05 # empirically determined, Kd for attitude control
       attR: 0.0

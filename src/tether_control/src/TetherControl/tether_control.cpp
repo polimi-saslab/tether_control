@@ -118,13 +118,13 @@ namespace tether_control
       std::bind(&TetherControl::vehicleLocalPositionSubCb, this, std::placeholders::_1));
     vehicle_attitude_sub = this->create_subscription<VehicleAttitude>(
       "/fmu/out/vehicle_attitude", qos, std::bind(&TetherControl::vehicleAttitudeSubCb, this, std::placeholders::_1));
-    vehicle_tether_force_sub = this->create_subscription<geometry_msgs::msg::Wrench>(
-      "/tether_lin/base_link/ForceTorque", qos,
-      std::bind(&TetherControl::vehicleTetherForceSubCb, this, std::placeholders::_1));
+    // vehicle_tether_force_sub = this->create_subscription<geometry_msgs::msg::Wrench>(
+    //   "/tether_lin/base_link/ForceTorque", qos,
+    //   std::bind(&TetherControl::vehicleTetherForceSubCb, this, std::placeholders::_1));
     winch_joint_state_sub = this->create_subscription<sensor_msgs::msg::JointState>(
       "/winch/joint_state", qos, std::bind(&TetherControl::winchJointStateSubCb, this, std::placeholders::_1));
-    drone_imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(
-      "/tether/imu0", qos, std::bind(&TetherControl::droneImuSubCb, this, std::placeholders::_1));
+    // drone_imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(
+    //   "/tether/imu0", qos, std::bind(&TetherControl::droneImuSubCb, this, std::placeholders::_1));
 
     callback_group_main = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
     callback_group_log = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -208,7 +208,7 @@ namespace tether_control
       {
         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode ATTITUDE");
 
-        Eigen::Vector4d controller_output;
+        Eigen::Vector4d controller_output = {0.0, 0.0, 0.0, 0.0};
         this->hoverThrust = this->get_parameter("control.hoverThrust").as_double();
         controller_output[3] = this->hoverThrust; // thrust
         double roll_rad = this->get_parameter("control.attR").as_double() * M_PI / 180.0;
@@ -220,7 +220,6 @@ namespace tether_control
           = px4_ros_com::frame_transforms::utils::quaternion::quaternion_from_euler(roll_rad, pitch_rad, yaw_rad);
         // Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
 
-        // pidController(controller_output, desired_quat);
         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ,
                              "Controller output: %f, %f, %f, %f, desired quat: %f, %f, %f, %f", controller_output[0],
                              controller_output[1], controller_output[2], controller_output[3], desired_quat.w(),
@@ -234,6 +233,19 @@ namespace tether_control
                              "Control in mode TETHER_FORCE_REACTIONS");
         publishOffboardControlMode({true, false, false, false, false});
         publishTrajectorySetpointCircle();
+      }
+    else if(this->control_mode == ControlMode::CUSTOM)
+      {
+        Eigen::Vector4d controller_output = {0.0, 0.0, 0.0, 0.0};
+        this->hoverThrust = this->get_parameter("control.hoverThrust").as_double();
+        controller_output[3] = this->hoverThrust;
+        Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity(); // safe default
+
+        forceCompensation(controller_output, desired_quat);
+
+        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode CUSTOM");
+        publishOffboardControlMode({false, false, false, true, false});
+        publishAttitudeSetpoint(controller_output, desired_quat);
       }
     else
       {

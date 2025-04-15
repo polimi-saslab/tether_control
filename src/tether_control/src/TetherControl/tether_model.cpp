@@ -46,13 +46,13 @@ namespace tether_control
           = this->tether_density * M_PI * std::pow(this->tether_diameter / 2, 2) * this->tether_cur_length; // [kg]
         float tether_ang_due_to_grav
           = 1 / 2
-            * (tether_mass * this->gravComp * std::sin(this->tether_ground_cur_angle_theta)
+            * (tether_mass * GRAVITY_FORCE * std::sin(this->tether_ground_cur_angle_theta)
                / this->winch_force); // == 1/2(M_t*g*cos(beta)/T), from eq (39) of The Influence of
         // Tether Sag on Airborne Wind Energy Generation by F. Trevisi
         // need to rotate vector from world to ENU, since publishing tether_force
         // in ENU frame
 
-        this->tether_grav_force = tether_mass * this->gravComp; // [N] force on drone due to gravity of tether weight
+        this->tether_grav_force = tether_mass * GRAVITY_FORCE; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:, inversing for drone pov
         msg.wrench.force.x = -(this->tether_grav_force + this->winch_force)
@@ -62,7 +62,7 @@ namespace tether_control
                              * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
                              * std::sin(this->tether_ground_cur_angle_phi);
         msg.wrench.force.z
-          = -(tether_grav_force + this->winch_force)
+          = -(this->tether_grav_force + this->winch_force)
             * std::cos(tether_ang_due_to_grav
                        + this->tether_ground_cur_angle_theta); // should be pi - theta, then z=-z but same
         RCLCPP_DEBUG(this->get_logger(),
@@ -91,6 +91,7 @@ namespace tether_control
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Publishing tether force in %f %f %f",
                          msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z);
 
+    this->tether_force_vec = {msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z};
     this->tether_force_pub_->publish(msg);
     if(this->debug_mode)
       {
