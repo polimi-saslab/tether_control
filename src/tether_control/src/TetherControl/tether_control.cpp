@@ -50,7 +50,7 @@ namespace tether_control
 
     // Init parameters
     // Control
-    this->log_mode = this->declare_parameter<float>("log_mode", true);
+    this->log_mode = this->declare_parameter<bool>("log_mode", true);
     this->debug_mode = this->declare_parameter<bool>("debug_mode", true);
     this->gravComp = this->declare_parameter<float>("gravComp", 9.81f);
     this->tethered = this->declare_parameter<bool>("tethered", true);
@@ -98,8 +98,9 @@ namespace tether_control
     actuators_motors_pub = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
     attitude_pub_ = this->create_publisher<VehicleAttitudeSetpoint>("/fmu/in/vehicle_attitude_setpoint", 10);
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
-    if(this->debug_mode)
-      tether_force_viz_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force_viz", 10);
+    tether_force_viz_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force_viz", 10);
+    tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
+    tether_model_metrics_pub_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("/metrics/model", 10);
 
     // PX4 requires specific QoS, see
     // https://docs.px4.io/main/en/ros2/user_guide.html#compatibility-issues
@@ -258,16 +259,25 @@ namespace tether_control
   // timer handling the publishers of sensor data, for analysis
   void TetherControl::timer_log_callback()
   {
-    if(!this->log_enabled)
+    if(!this->log_mode)
       {
         return;
       }
 
     if(this->is_node_alive)
       {
+        // do not abuse, may cause com problems!
         // to publish:
         // now: dist_gs_drone,tether_ground_cur_angle_theta, tether_ground_cur_angle_phi, tether_grav_force
         // when implemented: tether_cur_length, winch_force
+        std_msgs::msg::Float32MultiArray msg;
+        msg.data.resize(4);
+        msg.data[0] = this->dist_gs_drone;                 // [m]
+        msg.data[1] = this->tether_ground_cur_angle_theta; // [rad]
+        msg.data[2] = this->tether_ground_cur_angle_phi;   // [rad]
+        msg.data[3] = this->tether_grav_force;             // [N]
+
+        tether_model_metrics_pub_->publish(msg);
       }
   }
 

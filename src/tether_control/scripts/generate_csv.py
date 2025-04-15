@@ -2,6 +2,7 @@ import rosbag2_py
 from rclpy.serialization import deserialize_message
 from px4_msgs.msg import VehicleAttitude
 from geometry_msgs.msg import WrenchStamped
+from std_msgs.msg import Float32MultiArray
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,10 +10,11 @@ from scipy.spatial.transform import Rotation as R
 
 
 csv_file = 'tether_force_and_attitude.csv'
+date = 
 
 # Open reader
 storage_options = rosbag2_py.StorageOptions(
-    uri='/home/yannis/tether_control_ws/tether_control_bag',
+    uri='/home/yannis/tether_control_ws/install/tether_control/share/tether_control' + 'topic_results_{date}',
     storage_id='sqlite3'
 )
 converter_options = rosbag2_py.ConverterOptions('', '')
@@ -29,11 +31,13 @@ for topic_info in reader.get_all_topics_and_types():
 type_map = {
     'px4_msgs/msg/VehicleAttitude': VehicleAttitude,
     'geometry_msgs/msg/WrenchStamped': WrenchStamped,
+    'std_msgs/msg/Float32MultiArray': Float32MultiArray,
 }
 
 data = {
     '/fmu/out/vehicle_attitude': [],
     '/drone/tether_force': [],
+    '/metrics/model' : [],
 }
 
 # Extract both topics into separate lists

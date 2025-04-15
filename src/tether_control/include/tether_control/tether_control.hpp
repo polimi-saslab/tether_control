@@ -38,7 +38,7 @@
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "geometry_msgs/msg/wrench_stamped.hpp"
-#include "std_msgs/msg/u_int8_multi_array.hpp"
+#include "std_msgs/msg/float32_multi_array.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include <Eigen/Core>
 #include <frame_transforms.h>
@@ -178,6 +178,8 @@ namespace tether_control
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
     // pub for visualisation / debugging purposes
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_viz_pub_;
+    // pub for analysing data
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr tether_model_metrics_pub_;
 
     // Publish functions
     void publishOffboardControlMode(const std::vector<bool> &control_modes);
