@@ -139,7 +139,7 @@ namespace tether_control
     float tether_density = 0.0f;     // [kg/m^3] density of the cable
     float tether_diameter = 0.1f;    // [m] radius of the cable
     float tether_init_length = 1.0f; // [m] length of the cable
-    float gravity_const = 9.81f;     // [m/s^2] gravity constant
+    float winch_diameter = 0.1f;
     ///////////////////////////////////////////////
 
     ////////////////// Variables //////////////////
@@ -180,6 +180,7 @@ namespace tether_control
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_viz_pub_;
     // pub for analysing data
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr tether_model_metrics_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr drone_rpy_pub_;
 
     // Publish functions
     void publishOffboardControlMode(const std::vector<bool> &control_modes);
@@ -212,6 +213,7 @@ namespace tether_control
     double get_pitch_from_imu(const geometry_msgs::msg::Quaternion &quat);
     void convertControlMode(std::string control_mode_s);
     void convertDisturbMode(std::string disturb_mode_s);
+    Eigen::Vector3d quaternion_to_euler_deg(const Eigen::Quaterniond &q);
 
     // Others
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped

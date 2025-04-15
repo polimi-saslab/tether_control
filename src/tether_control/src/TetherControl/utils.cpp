@@ -26,6 +26,12 @@ namespace tether_control
     return (NED_ENU_Q * quat_in) * AIRCRAFT_BASELINK_Q;
   }
 
+  Eigen::Vector3d TetherControl::quaternion_to_euler_deg(const Eigen::Quaterniond &q)
+  {
+    // Convert to Euler angles in roll-pitch-yaw order, then convert to degrees
+    return q.toRotationMatrix().eulerAngles(2, 1, 0).reverse() * (180.0 / M_PI);
+  }
+
   double TetherControl::get_pitch_from_imu(const geometry_msgs::msg::Quaternion &quat)
   {
     tf2::Quaternion q(quat.x, quat.y, quat.z, quat.w);

@@ -2,7 +2,7 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
   ros__parameters:
     log_mode: false
     debug_mode: true
-    gravComp: 9.81 # z acceleration to compensate for hover
+    gravComp: 9.81 # z acceleration to compensate for hover, to move to a define
     tethered: true
     uav_type: "MC" # possibilities: MC, VTOL, VTOL-TAILSITTER
     control:
@@ -18,4 +18,4 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
       tether_init_length: 10.0
       tether_diameter: 0.01
       tether_density: 970.0 #source: Sofia
-    
+      winch_diameter: 0.1 # diameter of the winch [m]

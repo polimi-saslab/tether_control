@@ -46,14 +46,13 @@ namespace tether_control
           = this->tether_density * M_PI * std::pow(this->tether_diameter / 2, 2) * this->tether_cur_length; // [kg]
         float tether_ang_due_to_grav
           = 1 / 2
-            * (tether_mass * this->gravity_const * std::sin(this->tether_ground_cur_angle_theta)
+            * (tether_mass * this->gravComp * std::sin(this->tether_ground_cur_angle_theta)
                / this->winch_force); // == 1/2(M_t*g*cos(beta)/T), from eq (39) of The Influence of
         // Tether Sag on Airborne Wind Energy Generation by F. Trevisi
         // need to rotate vector from world to ENU, since publishing tether_force
         // in ENU frame
 
-        this->tether_grav_force
-          = tether_mass * this->gravity_const; // [N] force on drone due to gravity of tether weight
+        this->tether_grav_force = tether_mass * this->gravComp; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:, inversing for drone pov
         msg.wrench.force.x = -(tether_grav_force + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)

@@ -67,6 +67,7 @@ namespace tether_control
     this->tether_init_length = this->declare_parameter<float>("model.tether_init_length", 1.0f);
     this->tether_diameter = this->declare_parameter<float>("model.tether_diameter", 0.005f);
     this->tether_density = this->declare_parameter<float>("model.tether_density", 970.0f);
+    this->winch_diameter = this->declare_parameter<float>("model.winch_diameter", 970.0f);
 
     RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
     RCLCPP_INFO(this->get_logger(), "------------------- CONTROL --------------------");
@@ -84,6 +85,7 @@ namespace tether_control
     RCLCPP_INFO(this->get_logger(), "tether_init_length: %f", this->tether_init_length);
     RCLCPP_INFO(this->get_logger(), "tether_diameter: %f", this->tether_diameter);
     RCLCPP_INFO(this->get_logger(), "tether_density: %f", this->tether_density);
+    RCLCPP_INFO(this->get_logger(), "winch_diameter: %f", this->winch_diameter);
     RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
 
     convertControlMode(control_mode_s);
@@ -101,6 +103,7 @@ namespace tether_control
     tether_force_viz_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force_viz", 10);
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
     tether_model_metrics_pub_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("/metrics/model", 10);
+    drone_rpy_pub_ = this->create_publisher<geometry_msgs::msg::Vector3>("/drone/rpy", 10);
 
     // PX4 requires specific QoS, see
     // https://docs.px4.io/main/en/ros2/user_guide.html#compatibility-issues
@@ -206,9 +209,13 @@ namespace tether_control
         Eigen::Vector4d controller_output;
         this->hoverThrust = this->get_parameter("control.hoverThrust").as_double();
         controller_output[3] = this->hoverThrust; // thrust
-        Eigen::Quaterniond desired_quat = px4_ros_com::frame_transforms::utils::quaternion::quaternion_from_euler(
-          this->get_parameter("control.attR").as_double(), this->get_parameter("control.attP").as_double(),
-          this->get_parameter("control.attY").as_double()); // roll, pitch, yaw
+        double roll_rad = this->get_parameter("control.attR").as_double() * M_PI / 180.0;
+        double pitch_rad = this->get_parameter("control.attP").as_double() * M_PI / 180.0;
+        double yaw_rad = this->get_parameter("control.attY").as_double() * M_PI / 180.0;
+
+        // Convert to quaternion
+        Eigen::Quaterniond desired_quat
+          = px4_ros_com::frame_transforms::utils::quaternion::quaternion_from_euler(roll_rad, pitch_rad, yaw_rad);
         // Eigen::Quaterniond desired_quat = Eigen::Quaterniond::Identity();
 
         // pidController(controller_output, desired_quat);
@@ -270,14 +277,21 @@ namespace tether_control
         // to publish:
         // now: dist_gs_drone,tether_ground_cur_angle_theta, tether_ground_cur_angle_phi, tether_grav_force
         // when implemented: tether_cur_length, winch_force
-        std_msgs::msg::Float32MultiArray msg;
-        msg.data.resize(4);
-        msg.data[0] = this->dist_gs_drone;                 // [m]
-        msg.data[1] = this->tether_ground_cur_angle_theta; // [rad]
-        msg.data[2] = this->tether_ground_cur_angle_phi;   // [rad]
-        msg.data[3] = this->tether_grav_force;             // [N]
+        std_msgs::msg::Float32MultiArray msg_model;
+        msg_model.data.resize(4);
+        msg_model.data[0] = this->dist_gs_drone;                 // [m]
+        msg_model.data[1] = this->tether_ground_cur_angle_theta; // [rad]
+        msg_model.data[2] = this->tether_ground_cur_angle_phi;   // [rad]
+        msg_model.data[3] = this->tether_grav_force;             // [N]
 
-        tether_model_metrics_pub_->publish(msg);
+        tether_model_metrics_pub_->publish(msg_model);
+        Eigen::Vector3d rpy_deg = quaternion_to_euler_deg(this->attitude_quat_latest);
+
+        geometry_msgs::msg::Vector3 msg_rpy;
+        msg_rpy.x = rpy_deg.x();
+        msg_rpy.y = rpy_deg.y();
+        msg_rpy.z = rpy_deg.z();
+        drone_rpy_pub_->publish(msg_rpy);
       }
   }
 
