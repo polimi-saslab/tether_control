@@ -121,6 +121,8 @@ namespace tether_control
     vehicle_tether_force_sub = this->create_subscription<geometry_msgs::msg::Wrench>(
       "/tether_lin/base_link/ForceTorque", qos,
       std::bind(&TetherControl::vehicleTetherForceSubCb, this, std::placeholders::_1));
+    winch_joint_state_sub = this->create_subscription<sensor_msgs::msg::JointState>(
+      "/winch/joint_state", qos, std::bind(&TetherControl::winchJointStateSubCb, this, std::placeholders::_1));
     drone_imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(
       "/tether/imu0", qos, std::bind(&TetherControl::droneImuSubCb, this, std::placeholders::_1));
 
@@ -278,11 +280,13 @@ namespace tether_control
         // now: dist_gs_drone,tether_ground_cur_angle_theta, tether_ground_cur_angle_phi, tether_grav_force
         // when implemented: tether_cur_length, winch_force
         std_msgs::msg::Float32MultiArray msg_model;
-        msg_model.data.resize(4);
-        msg_model.data[0] = this->dist_gs_drone;                 // [m]
-        msg_model.data[1] = this->tether_ground_cur_angle_theta; // [rad]
-        msg_model.data[2] = this->tether_ground_cur_angle_phi;   // [rad]
-        msg_model.data[3] = this->tether_grav_force;             // [N]
+        msg_model.data.resize(6);
+        msg_model.data[0] = this->dist_gs_drone;                     // [m]
+        msg_model.data[1] = this->tether_cur_length;                 // [m]
+        msg_model.data[2] = this->tether_ground_cur_angle_theta;     // [rad]
+        msg_model.data[3] = this->tether_ground_cur_angle_phi;       // [rad]
+        msg_model.data[4] = this->winch_angle_latest * 180.0 / M_PI; // [rad]
+        msg_model.data[5] = this->tether_grav_force;                 // [N]
 
         tether_model_metrics_pub_->publish(msg_model);
         Eigen::Vector3d rpy_deg = quaternion_to_euler_deg(this->attitude_quat_latest);

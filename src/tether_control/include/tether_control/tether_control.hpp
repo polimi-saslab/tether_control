@@ -54,6 +54,7 @@
 #include <px4_msgs/msg/vehicle_status.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -150,12 +151,13 @@ namespace tether_control
     float attR, attP, attY; // roll, pitch, yaw
     // Model variables
     DisturbationMode disturb_mode = DisturbationMode::STRONG_SIDE;
-    float winch_force = 1.5f;                // [N] tension force felt by the winch
-    float dist_gs_drone = 0.0f;              // [m] distance between drone and ground station
-    float tether_cur_length = dist_gs_drone; // [m] current length of the cable, assuming straight line atm
-    float tether_drone_cur_angle = 0.0f;     // [rad] angle between the cable and the drone
-    float tether_ground_cur_angle_theta;     // [rad] angle between the cable and the ground plane
-    float tether_ground_cur_angle_phi;       // [rad] angle between the projection of the cable on ground and x
+    float winch_force = 1.5f;            // [N] tension force felt by the winch
+    float dist_gs_drone = 0.0f;          // [m] distance between drone and ground station
+    float tether_cur_length = 1.0;       // [m] current length of the cable, assuming straight line atm
+    float tether_drone_cur_angle = 0.0f; // [rad] angle between the cable and the drone
+    float tether_ground_cur_angle_theta; // [rad] angle between the cable and the ground plane
+    float tether_ground_cur_angle_phi;   // [rad] angle between the projection of the cable on ground and x
+    float winch_angle_latest = 0.0f;     // [rad] latest angle of the winch, updated by SubCb
 
     // Sensor data
     float tether_grav_force;
@@ -196,6 +198,7 @@ namespace tether_control
     rclcpp::Subscription<px4_msgs::msg::VehicleAttitude>::SharedPtr vehicle_attitude_sub;
     rclcpp::Subscription<geometry_msgs::msg::Wrench>::SharedPtr vehicle_tether_force_sub;
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr drone_imu_sub;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr winch_joint_state_sub;
 
     // Callback functions
     void droneImuSubCb(const sensor_msgs::msg::Imu msg);
@@ -203,6 +206,7 @@ namespace tether_control
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
     void vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg);
+    void winchJointStateSubCb(const sensor_msgs::msg::JointState msg);
 
     // Controller functions
     void updateMotors(const Eigen::Matrix<float, kMaxNumMotors, 1> &motor_commands);

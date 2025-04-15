@@ -55,9 +55,10 @@ namespace tether_control
         this->tether_grav_force = tether_mass * this->gravComp; // [N] force on drone due to gravity of tether weight
 
         // assuming spherical coordinates for ENU frame:, inversing for drone pov
-        msg.wrench.force.x = -(tether_grav_force + this->winch_force) * std::sin(this->tether_ground_cur_angle_theta)
+        msg.wrench.force.x = -(this->tether_grav_force + this->winch_force)
+                             * std::sin(this->tether_ground_cur_angle_theta)
                              * std::cos(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.y = -(tether_grav_force + this->winch_force)
+        msg.wrench.force.y = -(this->tether_grav_force + this->winch_force)
                              * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
                              * std::sin(this->tether_ground_cur_angle_phi);
         msg.wrench.force.z

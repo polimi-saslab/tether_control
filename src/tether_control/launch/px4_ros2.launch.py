@@ -74,6 +74,11 @@ def launch_setup(context, *args, **kwargs):
         output='screen'
     )
 
+    ros2_foxglove_process = ExecuteProcess(
+        cmd=['ros2', 'launch', 'foxglove_bridge', 'foxglove_bridge_launch.xml'],
+        output='screen'
+    )
+
     # px4_process = ExecuteProcess(
     #     cmd=['make', 'px4_sitl', 'gz_tethered_lin'],
     #     cwd='/home/yannis/Sas_lab/PX4-Autopilot',
@@ -85,5 +90,6 @@ def launch_setup(context, *args, **kwargs):
         # px4_process,
         gazebo_bridge_node,
         tether_control_node,
-        ros2_bag_process
+        ros2_bag_process,
+        ros2_foxglove_process
     ]

@@ -84,4 +84,17 @@ namespace tether_control
     //  msg.linear_acceleration.y, msg.linear_acceleration.z);
   }
 
+  void TetherControl::winchJointStateSubCb(const sensor_msgs::msg::JointState msg)
+  {
+    // would get winch joint position and update tether length out
+    float delta_angle_rad = this->winch_angle_latest - msg.position[0];
+    float delta_tether_length = this->winch_diameter / 2.0 * delta_angle_rad; // r*delta_theta
+    // this->tether_cur_length += delta_tether_length;
+    this->winch_angle_latest = msg.position[0];
+
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ,
+                         "Winch pos: %f, delta angle: %f, delta tether length: %f", msg.position[0], delta_angle_rad,
+                         delta_tether_length);
+  }
+
 } // namespace tether_control

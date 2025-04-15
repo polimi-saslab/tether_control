@@ -1,6 +1,6 @@
 yannis_tether_control_node: # $USER + tether_control_node, @todo: change
   ros__parameters:
-    log_mode: false
+    log_mode: true
     debug_mode: true
     gravComp: 9.81 # z acceleration to compensate for hover, to move to a define
     tethered: true
@@ -15,7 +15,8 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
       attY: 0.0
     model:
       disturb_mode: "TET_GRAV_FIL_ANG" # possibilities: STRONG_SIDE, CIRCULAR, TET_GRAV_FIL_ANG
-      tether_init_length: 10.0
-      tether_diameter: 0.01
-      tether_density: 970.0 #source: Sofia
-      winch_diameter: 0.1 # diameter of the winch [m]
+      tether_init_length: 10.0 # [m]
+      tether_total_length: 100.0 # [m]
+      tether_diameter: 0.01 # [m]
+      tether_density: 970.0 #source: Sofia [kg/m³]
+      winch_diameter: 0.1 # [m]

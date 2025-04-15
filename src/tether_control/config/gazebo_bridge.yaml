@@ -8,33 +8,39 @@
   gz_type_name: gz.msgs.Clock
   direction: GZ_TO_ROS
 
-- ros_topic_name: /drone/base_link/ForceTorque
-  gz_topic_name: /drone/base_link/ForceTorque
-  ros_type_name: geometry_msgs/msg/Wrench
-  gz_type_name: gz.msgs.Wrench
+- ros_topic_name: /winch/joint_state 
+  gz_topic_name: /winch/joint_state 
+  ros_type_name: sensor_msgs/msg/JointState
+  gz_type_name: gz.msgs.Model
   direction: GZ_TO_ROS
 
-- ros_topic_name: /tether/imu0
-  gz_topic_name: /world/default/model/tethered_lin_0/link/base_link/sensor/imu_sensor/imu
-  ros_type_name: sensor_msgs/msg/Imu
-  gz_type_name: gz.msgs.IMU
-  direction: GZ_TO_ROS
+# - ros_topic_name: /drone/base_link/ForceTorque
+#   gz_topic_name: /drone/base_link/ForceTorque
+#   ros_type_name: geometry_msgs/msg/Wrench
+#   gz_type_name: gz.msgs.Wrench
+#   direction: GZ_TO_ROS
 
-- ros_topic_name: /drone/imu0
-  gz_topic_name: /world/default/model/x500_0/link/base_link/sensor/imu_sensor/imu
-  ros_type_name: sensor_msgs/msg/Imu
-  gz_type_name: gz.msgs.IMU
-  direction: GZ_TO_ROS
+# - ros_topic_name: /tether/imu0
+#   gz_topic_name: /world/default/model/tethered_lin_0/link/base_link/sensor/imu_sensor/imu
+#   ros_type_name: sensor_msgs/msg/Imu
+#   gz_type_name: gz.msgs.IMU
+#   direction: GZ_TO_ROS
 
-- ros_topic_name: /x500/sensor/GPSFix 
-  gz_topic_name: /world/default/model/x500_0/link/base_link/sensor/navsat_sensor/navsat
-  ros_type_name: sensor_msgs/msg/NavSatFix
-  gz_type_name: gz.msgs.NavSat
-  direction: GZ_TO_ROS
+# - ros_topic_name: /drone/imu0
+#   gz_topic_name: /world/default/model/x500_0/link/base_link/sensor/imu_sensor/imu
+#   ros_type_name: sensor_msgs/msg/Imu
+#   gz_type_name: gz.msgs.IMU
+#   direction: GZ_TO_ROS
+
+# - ros_topic_name: /x500/sensor/GPSFix 
+#   gz_topic_name: /world/default/model/x500_0/link/base_link/sensor/navsat_sensor/navsat
+#   ros_type_name: sensor_msgs/msg/NavSatFix
+#   gz_type_name: gz.msgs.NavSat
+#   direction: GZ_TO_ROS
 
 ################ ROS_TO_GZ ################
-- ros_topic_name: /winch/controller 
-  gz_topic_name: /winch/controller 
-  ros_type_name: std_msgs/msg/Float64
-  gz_type_name: gz.msgs.Double
-  direction: ROS_TO_GZ
+# - ros_topic_name: /winch/controller 
+#   gz_topic_name: /winch/controller 
+#   ros_type_name: std_msgs/msg/Float64
+#   gz_type_name: gz.msgs.Double
+#   direction: ROS_TO_GZ
