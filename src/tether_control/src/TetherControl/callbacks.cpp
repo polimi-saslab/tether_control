@@ -17,9 +17,9 @@ namespace tether_control
     Eigen::Quaterniond q = px4_ros_com::frame_transforms::utils::quaternion::array_to_eigen_quat(msg.q);
     Eigen::Quaterniond enu_q = px4_ros_com::frame_transforms::ned_to_enu_orientation(q);
 
-    Eigen::Quaterniond roll_correction(Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitY()));
-    Eigen::Quaterniond enu_q_fixed = roll_correction * enu_q;
-    this->attitude_quat_latest = enu_q_fixed;
+    // Eigen::Quaterniond roll_correction(Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitY()));
+    // Eigen::Quaterniond enu_q_fixed = roll_correction * enu_q;
+    this->attitude_quat_latest = enu_q;
 
     RCLCPP_INFO_ONCE(this->get_logger(), "-------------- GOT ATTITUDE DATA --------------");
   }

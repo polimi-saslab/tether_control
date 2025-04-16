@@ -52,11 +52,10 @@ namespace tether_control
     // Control
     this->log_mode = this->declare_parameter<bool>("log_mode", true);
     this->debug_mode = this->declare_parameter<bool>("debug_mode", true);
-    this->gravComp = this->declare_parameter<float>("gravComp", 9.81f);
     this->tethered = this->declare_parameter<bool>("tethered", true);
     this->uav_type = this->declare_parameter<std::string>("uav_type", "MC");
     control_mode_s = this->declare_parameter<std::string>("control.control_mode", "ATTITUDE");
-    this->hoverThrust = this->declare_parameter<float>("control.hoverThrust", 0.5f);
+    this->attThrustKp = this->declare_parameter<float>("control.hoverThrust", 0.5f);
     this->attThrustKp = this->declare_parameter<float>("control.attThrustKp", 0.5f);
     this->attThrustKd = this->declare_parameter<float>("control.attThrustKd", 0.05f);
     this->attR = this->declare_parameter<float>("control.attR", 0.0f);
@@ -73,12 +72,11 @@ namespace tether_control
     RCLCPP_INFO(this->get_logger(), "------------------- CONTROL --------------------");
     RCLCPP_INFO(this->get_logger(), "log_mode: %i", this->log_mode);
     RCLCPP_INFO(this->get_logger(), "debug_mode: %i", this->debug_mode);
-    RCLCPP_INFO(this->get_logger(), "gravComp: %f", this->gravComp);
     RCLCPP_INFO(this->get_logger(), "tethered: %i", this->tethered);
     RCLCPP_INFO(this->get_logger(), "uav_type: %s", this->uav_type.c_str());
     RCLCPP_INFO(this->get_logger(), "control_mode: %s", control_mode_s.c_str());
-    RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
     RCLCPP_INFO(this->get_logger(), "attThrustKp: %f", this->attThrustKp);
+    RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
     RCLCPP_INFO(this->get_logger(), "attThrustKd: %f", this->attThrustKd);
     RCLCPP_INFO(this->get_logger(), "------------------- MODEL --------------------");
     RCLCPP_INFO(this->get_logger(), "disturb_mode: %s", disturb_mode_s.c_str());
@@ -90,6 +88,7 @@ namespace tether_control
 
     convertControlMode(control_mode_s);
     convertDisturbMode(disturb_mode_s);
+    setHoverThrust();
 
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
@@ -209,7 +208,9 @@ namespace tether_control
         RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Control in mode ATTITUDE");
 
         Eigen::Vector4d controller_output = {0.0, 0.0, 0.0, 0.0};
-        this->hoverThrust = this->get_parameter("control.hoverThrust").as_double();
+        // if we want to modify the thrust: (isnt the default one, see setHoverThrust func)
+        if(this->debug_mode)
+          this->hoverThrust = this->get_parameter("control.hoverThrust").as_double();
         controller_output[3] = this->hoverThrust; // thrust
         double roll_rad = this->get_parameter("control.attR").as_double() * M_PI / 180.0;
         double pitch_rad = this->get_parameter("control.attP").as_double() * M_PI / 180.0;

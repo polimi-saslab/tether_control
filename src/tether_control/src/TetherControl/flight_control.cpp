@@ -62,6 +62,10 @@ namespace tether_control
   {
     Eigen::Vector3d force_to_compensate = this->tether_force_vec + Eigen::Vector3d(0.0, 0.0, WEIGHT_TAROT);
     controller_output[3] = force_to_compensate.norm() / this->thrust_force_constant;
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ,
+                         "tether force: [%f, %f, %f], Force to compensate: [%f, %f, %f], thrust: %f",
+                         this->tether_force_vec[0], this->tether_force_vec[1], this->tether_force_vec[2],
+                         force_to_compensate[0], force_to_compensate[1], force_to_compensate[2], controller_output[3]);
 
     // compute quaternion to rotate drone s.t. its Z axis points towards it (NED frame)
     Eigen::Vector3d target_z = -force_to_compensate.normalized();
@@ -104,8 +108,8 @@ namespace tether_control
 
     // geometry_msgs::msg::Quaternion orientation = imu_msg.orientation;
     float cur_accel_z_world = accel_world.getZ();
-    float cur_er_accel_z = this->gravComp - cur_accel_z_world; // gz imu includes gravity
-    if(this->last_er_accel_z == 0.0f)                          // first time we get the data
+    float cur_er_accel_z = GRAVITY_FORCE - cur_accel_z_world; // gz imu includes gravity
+    if(this->last_er_accel_z == 0.0f)                         // first time we get the data
       {
         this->last_er_accel_z = cur_er_accel_z;
       }

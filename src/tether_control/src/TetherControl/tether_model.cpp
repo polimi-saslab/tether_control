@@ -104,4 +104,38 @@ namespace tether_control
       }
   }
 
+  void TetherControl::setHoverThrust()
+  {
+    // Set the hover thrust based on the UAV type and tethered configuration
+    if(this->uav_type == "tarot")
+      {
+        if(this->tethered)
+          {
+            this->hoverThrust = 0.3733f + 0.1f;
+          }
+        else
+          {
+            this->hoverThrust = 0.3733f; // # empirically determined
+          }
+      }
+    else if(this->uav_type == "x500")
+      {
+        // random values, not sure if needed anyway
+        if(this->tethered)
+          {
+            this->hoverThrust = 0.5;
+          }
+        else
+          {
+            this->hoverThrust = 0.4;
+          }
+      }
+    else
+      {
+        RCLCPP_ERROR(this->get_logger(), "Unknown UAV type, hover thrust set to 0.5");
+        this->hoverThrust = 0.5f;
+      }
+    RCLCPP_INFO(this->get_logger(), "Hover thrust set to: %f", this->hoverThrust);
+  }
+
 } // namespace tether_control

@@ -135,11 +135,10 @@ namespace tether_control
 
     ////////////////// Parameters //////////////////
     // Control
-    std::string uav_type = "MC"; // [MC, VTOL, VTOL_TAILSITTER]
-    bool tethered = false;       // [true, false] true if the drone is tethered
+    std::string uav_type = "tarot"; // [MC, VTOL, VTOL_TAILSITTER]
+    bool tethered = false;          // [true, false] true if the drone is tethered
     float hoverThrust
       = 0.5; // [N] thrust to be applied to drone to hover, determined by simulation, if no tether -> 0.35
-    float gravComp = 9.81f;
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;
     // Model
@@ -148,7 +147,7 @@ namespace tether_control
     float tether_init_length = 1.0f; // [m] length of the cable
     float winch_diameter = 0.1f;
     Eigen::Vector3d tether_force_vec{0.0f, 0.0f, 0.0f};
-    float thrust_force_constant = 0.0f;
+    float thrust_force_constant = 43.0452183f;
     ///////////////////////////////////////////////
 
     ////////////////// Variables //////////////////
@@ -227,6 +226,7 @@ namespace tether_control
     void convertControlMode(std::string control_mode_s);
     void convertDisturbMode(std::string disturb_mode_s);
     Eigen::Vector3d quaternion_to_euler_deg(const Eigen::Quaterniond &q);
+    void setHoverThrust();
 
     // Others
     std::atomic<uint64_t> timestamp_; //!< common synced timestamped
