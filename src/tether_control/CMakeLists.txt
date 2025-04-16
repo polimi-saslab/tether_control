@@ -34,6 +34,7 @@ set(TETHER_CONTROL_SOURCES
 
 add_executable(tether_control_node
   src/main.cpp
+  src/model.cpp
   ${TETHER_CONTROL_SOURCES}
 )
 

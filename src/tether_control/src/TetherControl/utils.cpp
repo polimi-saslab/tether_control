@@ -2,6 +2,63 @@
 
 namespace tether_control
 {
+
+  void TetherControl::loadParams()
+  {
+    // Control
+    this->log_mode = this->declare_parameter<bool>("log_mode", true);
+    this->debug_mode = this->declare_parameter<bool>("debug_mode", true);
+    this->tethered = this->declare_parameter<bool>("tethered", true);
+    this->uav_type = this->declare_parameter<std::string>("uav_type", "MC");
+    this->gravity = this->declare_parameter<float>("gravity", 9.81f);
+    control_mode_s = this->declare_parameter<std::string>("control.control_mode", "ATTITUDE");
+    this->attThrustKp = this->declare_parameter<float>("control.hoverThrust", 0.5f);
+    this->attThrustKp = this->declare_parameter<float>("control.attThrustKp", 0.5f);
+    this->attThrustKd = this->declare_parameter<float>("control.attThrustKd", 0.05f);
+    this->attR = this->declare_parameter<float>("control.attR", 0.0f);
+    this->attP = this->declare_parameter<float>("control.attP", 0.0f);
+    this->attY = this->declare_parameter<float>("control.attY", 0.0f);
+    // Model
+    std::string disturb_mode_s = this->declare_parameter<std::string>("model.disturb_mode", "STRONG_SIDE");
+    this->tether_init_length = this->declare_parameter<float>("model.tether_init_length", 85.7e9f);
+    this->tether_diameter = this->declare_parameter<float>("model.tether_diameter", 0.005f);
+    this->tether_density = this->declare_parameter<float>("model.tether_density", 970.0f);
+    this->tether_yung_modulus = this->declare_parameter<float>("model.tether_yung_modulus", 970.0f);
+    this->winch_diameter = this->declare_parameter<float>("model.winch_diameter", 970.0f);
+
+    // Log for traceability
+    RCLCPP_INFO(this->get_logger(), "------------------- PARAMETERS --------------------");
+    RCLCPP_INFO(this->get_logger(), "------------------- CONTROL --------------------");
+    RCLCPP_INFO(this->get_logger(), "log_mode: %i", this->log_mode);
+    RCLCPP_INFO(this->get_logger(), "debug_mode: %i", this->debug_mode);
+    RCLCPP_INFO(this->get_logger(), "tethered: %i", this->tethered);
+    RCLCPP_INFO(this->get_logger(), "uav_type: %s", this->uav_type.c_str());
+    RCLCPP_INFO(this->get_logger(), "gravity: %f", this->gravity);
+    RCLCPP_INFO(this->get_logger(), "control_mode: %s", control_mode_s.c_str());
+    RCLCPP_INFO(this->get_logger(), "attThrustKp: %f", this->attThrustKp);
+    RCLCPP_INFO(this->get_logger(), "hoverThrust: %f", this->hoverThrust);
+    RCLCPP_INFO(this->get_logger(), "attThrustKd: %f", this->attThrustKd);
+    RCLCPP_INFO(this->get_logger(), "------------------- MODEL --------------------");
+    RCLCPP_INFO(this->get_logger(), "disturb_mode: %s", disturb_mode_s.c_str());
+    RCLCPP_INFO(this->get_logger(), "tether_init_length: %f", this->tether_init_length);
+    RCLCPP_INFO(this->get_logger(), "tether_diameter: %f", this->tether_diameter);
+    RCLCPP_INFO(this->get_logger(), "tether_density: %f", this->tether_density);
+    RCLCPP_INFO(this->get_logger(), "winch_diameter: %f", this->winch_diameter);
+    RCLCPP_INFO(this->get_logger(), "tether_yung_modulus: %f", this->tether_yung_modulus);
+    RCLCPP_INFO(this->get_logger(), "---------------------------------------------------");
+
+    convertControlMode(control_mode_s);
+    convertDisturbMode(disturb_mode_s);
+    setHoverThrust();
+
+    // Setting model values
+    tether_model_.setGravity(this->gravity);
+    tether_model_.setTetherInitLength(this->tether_init_length);
+    tether_model_.setTetherDiameter(this->tether_diameter);
+    tether_model_.setTetherDensity(this->tether_density);
+    tether_model_.setTetherYungModulus(this->tether_yung_modulus);
+  }
+
   Eigen::Quaterniond TetherControl::rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in)
   {
     // Transform from orientation represented in ROS format to PX4 format and back

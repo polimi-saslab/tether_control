@@ -58,6 +58,8 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 
+#include "tether_model.h"
+
 #include <chrono>
 #include <cmath>
 #include <eigen3/Eigen/Eigen>
@@ -113,6 +115,7 @@ namespace tether_control
     };
 
   private:
+    tether_model tether_model_;
     // Timers
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::TimerBase::SharedPtr timer_alive;
@@ -143,9 +146,11 @@ namespace tether_control
     float attThrustKp = 0.5;
     float attThrustKd = 0.05;
     // Model
-    float tether_density = 0.0f;     // [kg/m^3] density of the cable
-    float tether_diameter = 0.1f;    // [m] radius of the cable
-    float tether_init_length = 1.0f; // [m] length of the cable
+    float gravity = 9.81f;
+    float tether_yung_modulus = 8.57e9f; // [Pa] Young's modulus of the tether
+    float tether_init_length = 1.0f;     // [m] length of the cable
+    float tether_density = 0.0f;         // [kg/m^3] density of the cable
+    float tether_diameter = 0.1f;        // [m] radius of the cable
     float winch_diameter = 0.1f;
     Eigen::Vector3d tether_force_vec{0.0f, 0.0f, 0.0f};
     float thrust_force_constant = 35; // 43.0452183f;
@@ -206,11 +211,9 @@ namespace tether_control
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr winch_joint_state_sub;
 
     // Callback functions
-    // void droneImuSubCb(const sensor_msgs::msg::Imu msg);
     void vehicleAttitudeSubCb(const px4_msgs::msg::VehicleAttitude msg);
     void vehicleLocalPositionSubCb(const px4_msgs::msg::VehicleLocalPosition msg);
     void vehicleStatusSubCb(const px4_msgs::msg::VehicleStatus msg);
-    // void vehicleTetherForceSubCb(const geometry_msgs::msg::Wrench msg);
     void winchJointStateSubCb(const sensor_msgs::msg::JointState msg);
 
     // Controller functions
@@ -219,6 +222,7 @@ namespace tether_control
     void forceCompensation(Eigen::Vector4d &controller_output, Eigen::Quaterniond &desired_quat);
 
     // Utils
+    void loadParams();
     Eigen::Quaterniond rotateQuaternionFromToENU_NED(const Eigen::Quaterniond &quat_in);
     double get_pitch_from_imu(const geometry_msgs::msg::Quaternion &quat);
     void convertControlMode(std::string control_mode_s);

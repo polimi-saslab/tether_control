@@ -39,21 +39,23 @@ namespace tether_control
       }
     else if(this->disturb_mode == DisturbationMode::TET_GRAV_FIL_ANG)
       {
-        // Specific model for tether force
-        this->tether_cur_length = this->dist_gs_drone; // easy way atm
-        float tether_mass
-          = this->tether_density * M_PI * std::pow(this->tether_diameter / 2, 2) * this->tether_cur_length; // [kg]
-        float tether_grav_force = tether_mass * GRAVITY_FORCE; // [N] force on drone due to gravity of tether weight
-        float tether_ang_due_to_grav
-          = 1 / 2
-            * (tether_mass * GRAVITY_FORCE * std::sin(this->tether_ground_cur_angle_theta)
-               / this->winch_force); // == 1/2(M_t*g*cos(beta)/T), from eq (39) of The Influence of
-        float tether_tensile_force = std::max(0.0, SPRING_CONSTANT_F / this->tether_init_length
-                                                     * (this->dist_gs_drone - this->tether_init_length));
-        // k*(r-l0)/l0, where k = EA/L = 85.7e9 * M_PI*(0.01/2)² / tether_cur_length
-        // Tether Sag on Airborne Wind Energy Generation by F. Trevisi
-        // need to rotate vector from world to ENU, since publishing tether_force
-        // in ENU frame
+        float resulting_force = 0.0;
+        tether_model_.computeTetherForce(&resulting_force);
+        // // Specific model for tether force
+        // this->tether_cur_length = this->dist_gs_drone; // easy way atm
+        // float tether_mass
+        //   = this->tether_density * M_PI * std::pow(this->tether_diameter / 2, 2) * this->tether_cur_length; // [kg]
+        // float tether_grav_force = tether_mass * GRAVITY_FORCE; // [N] force on drone due to gravity of tether weight
+        // float tether_ang_due_to_grav
+        //   = 1 / 2
+        //     * (tether_mass * GRAVITY_FORCE * std::sin(this->tether_ground_cur_angle_theta)
+        //        / this->winch_force); // == 1/2(M_t*g*cos(beta)/T), from eq (39) of The Influence of
+        // float tether_tensile_force = std::max(0.0, SPRING_CONSTANT_F / this->tether_init_length
+        //                                              * (this->dist_gs_drone - this->tether_init_length));
+        // // k*(r-l0)/l0, where k = EA/L = 85.7e9 * M_PI*(0.01/2)² / tether_cur_length
+        // // Tether Sag on Airborne Wind Energy Generation by F. Trevisi
+        // // need to rotate vector from world to ENU, since publishing tether_force
+        // // in ENU frame
 
         float resulting_force = tether_tensile_force + tether_grav_force + this->winch_force;
         // float resulting_force = 1.0;
