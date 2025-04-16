@@ -61,11 +61,10 @@ namespace tether_control
   void TetherControl::forceCompensation(Eigen::Vector4d &controller_output, Eigen::Quaterniond &desired_quat)
   {
     Eigen::Vector3d force_to_compensate = this->tether_force_vec + Eigen::Vector3d(0.0, 0.0, WEIGHT_TAROT);
-    controller_output[3] = force_to_compensate.norm() / this->thrust_force_constant;
+    controller_output[3] = std::clamp((force_to_compensate.norm() / this->thrust_force_constant), 0.0, 1.0);
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ,
-                         "tether force: [%f, %f, %f], Force to compensate: [%f, %f, %f], thrust: %f",
-                         this->tether_force_vec[0], this->tether_force_vec[1], this->tether_force_vec[2],
-                         force_to_compensate[0], force_to_compensate[1], force_to_compensate[2], controller_output[3]);
+                         " Force to compensate: [%f, %f, %f], thrust: %f", force_to_compensate[0],
+                         force_to_compensate[1], force_to_compensate[2], controller_output[3]);
 
     // compute quaternion to rotate drone s.t. its Z axis points towards it (NED frame)
     Eigen::Vector3d target_z = -force_to_compensate.normalized();

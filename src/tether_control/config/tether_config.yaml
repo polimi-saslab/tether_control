@@ -5,9 +5,9 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
     tethered: true
     uav_type: "tarot" # possibilities: MC, VTOL, VTOL-TAILSITTER
     control:
-      control_mode: "ATTITUDE" #TETHER_FORCE_REACTIONS, ATTITUDE, THRUST_IDENTIF
+      control_mode: "CUSTOM" #TETHER_FORCE_REACTIONS, ATTITUDE, THRUST_IDENTIF
       hoverThrust: 0.3733 # empirically determined, thrust to hover in sim 0.3733 with tethered=false
-      thrust_force_constant: 43.0452183 # empirically: k = F/thrust = 1.638*9.81/0.3733 = 7.17420305
+      thrust_force_constant: 43.0452183 # empirically: k = F/thrust = 1.638*9.81/0.3733 = 43.0452183
       attThrustKp: 0.5 # empirically determined, Kp for attitude control
       attThrustKd: 0.05 # empirically determined, Kd for attitude control
       attR: 0.0
@@ -18,5 +18,7 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
       tether_init_length: 10.0 # [m]
       tether_total_length: 100.0 # [m]
       tether_diameter: 0.01 # [m] -> minimum breaking load associated
-      tether_density: 970.0 #source: Sofia [kg/m³]
+      tether_density: 970.0 #source: Sofia [kg/m³] Spectra 2000 typical strain to failure: 0.03
+      tether_young_modulus: 85.7e9 # [Pa]
+      tether_spring_constant: 6.73e6  #k = EA/L = 85.7e9 * M_PI*(0.01/2)² / init_length
       winch_diameter: 0.1 # [m]

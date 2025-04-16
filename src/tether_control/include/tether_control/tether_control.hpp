@@ -78,6 +78,7 @@ using namespace px4_msgs::msg;
   (TAROT680_MASS * GRAVITY_FORCE) // [N] force to be applied to drone to hover, determined by simulation
 #define LOG_THROT_FREQ 1000       // [Hz] frequency at which to log throttle values (normal)
 #define LOG_THROT_FREQ_LOW 100    // [Hz] frequency at which to log throttle values (speedy)
+#define SPRING_CONSTANT_F 6.73e6  // [N] spring constant of the tether, corr to E*A, for A=0.01 & E=8.57e9c
 
 namespace tether_control
 {
@@ -147,7 +148,7 @@ namespace tether_control
     float tether_init_length = 1.0f; // [m] length of the cable
     float winch_diameter = 0.1f;
     Eigen::Vector3d tether_force_vec{0.0f, 0.0f, 0.0f};
-    float thrust_force_constant = 43.0452183f;
+    float thrust_force_constant = 35; // 43.0452183f;
     ///////////////////////////////////////////////
 
     ////////////////// Variables //////////////////
@@ -165,9 +166,6 @@ namespace tether_control
     float tether_ground_cur_angle_theta; // [rad] angle between the cable and the ground plane
     float tether_ground_cur_angle_phi;   // [rad] angle between the projection of the cable on ground and x
     float winch_angle_latest = 0.0f;     // [rad] latest angle of the winch, updated by SubCb
-
-    // Sensor data
-    float tether_grav_force;
 
     // PX4 subscription data
     Eigen::Quaterniond attitude_quat_latest;

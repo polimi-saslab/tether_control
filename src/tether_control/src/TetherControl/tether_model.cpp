@@ -41,35 +41,38 @@ namespace tether_control
       {
         // Specific model for tether force
         this->tether_cur_length = this->dist_gs_drone; // easy way atm
-
         float tether_mass
           = this->tether_density * M_PI * std::pow(this->tether_diameter / 2, 2) * this->tether_cur_length; // [kg]
+        float tether_grav_force = tether_mass * GRAVITY_FORCE; // [N] force on drone due to gravity of tether weight
         float tether_ang_due_to_grav
           = 1 / 2
             * (tether_mass * GRAVITY_FORCE * std::sin(this->tether_ground_cur_angle_theta)
                / this->winch_force); // == 1/2(M_t*g*cos(beta)/T), from eq (39) of The Influence of
+        float tether_tensile_force = std::max(0.0, SPRING_CONSTANT_F / this->tether_init_length
+                                                     * (this->dist_gs_drone - this->tether_init_length));
+        // k*(r-l0)/l0, where k = EA/L = 85.7e9 * M_PI*(0.01/2)² / tether_cur_length
         // Tether Sag on Airborne Wind Energy Generation by F. Trevisi
         // need to rotate vector from world to ENU, since publishing tether_force
         // in ENU frame
 
-        this->tether_grav_force = tether_mass * GRAVITY_FORCE; // [N] force on drone due to gravity of tether weight
-
-        // assuming spherical coordinates for ENU frame:, inversing for drone pov
-        msg.wrench.force.x = -(this->tether_grav_force + this->winch_force)
-                             * std::sin(this->tether_ground_cur_angle_theta)
+        float resulting_force = tether_tensile_force + tether_grav_force + this->winch_force;
+        // float resulting_force = 1.0;
+        // assuming spherical coordinates for ENU frame:, inversing to create reaction force to the drone
+        msg.wrench.force.x = -(resulting_force)*std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
                              * std::cos(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.y = -(this->tether_grav_force + this->winch_force)
-                             * std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
+        msg.wrench.force.y = -(resulting_force)*std::sin(tether_ang_due_to_grav + this->tether_ground_cur_angle_theta)
                              * std::sin(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.z
-          = -(this->tether_grav_force + this->winch_force)
-            * std::cos(tether_ang_due_to_grav
-                       + this->tether_ground_cur_angle_theta); // should be pi - theta, then z=-z but same
+        msg.wrench.force.z = -(resulting_force)*std::cos(
+          tether_ang_due_to_grav + this->tether_ground_cur_angle_theta); // should be pi - theta, then z=-z but same
         RCLCPP_DEBUG(this->get_logger(),
                      "tether_cur_length: %f, tether_mass: %f, tether_ang_due_to_grav: %f, "
                      "tether_ground_cur_angle_theta: %f, tether_ground_cur_angle_phi: %f",
                      this->tether_cur_length, tether_mass, tether_ang_due_to_grav, this->tether_ground_cur_angle_theta,
                      this->tether_ground_cur_angle_phi);
+        RCLCPP_INFO(this->get_logger(),
+                    "Resulting force = winch_force %f + tether_grav_force %f + "
+                    "tether_tensile_force %f",
+                    this->winch_force, tether_grav_force, tether_tensile_force);
       }
     else
       {

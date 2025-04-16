@@ -117,13 +117,8 @@ namespace tether_control
       std::bind(&TetherControl::vehicleLocalPositionSubCb, this, std::placeholders::_1));
     vehicle_attitude_sub = this->create_subscription<VehicleAttitude>(
       "/fmu/out/vehicle_attitude", qos, std::bind(&TetherControl::vehicleAttitudeSubCb, this, std::placeholders::_1));
-    // vehicle_tether_force_sub = this->create_subscription<geometry_msgs::msg::Wrench>(
-    //   "/tether_lin/base_link/ForceTorque", qos,
-    //   std::bind(&TetherControl::vehicleTetherForceSubCb, this, std::placeholders::_1));
     winch_joint_state_sub = this->create_subscription<sensor_msgs::msg::JointState>(
       "/winch/joint_state", qos, std::bind(&TetherControl::winchJointStateSubCb, this, std::placeholders::_1));
-    // drone_imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(
-    //   "/tether/imu0", qos, std::bind(&TetherControl::droneImuSubCb, this, std::placeholders::_1));
 
     callback_group_main = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
     callback_group_log = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -259,22 +254,7 @@ namespace tether_control
 
     if(this->tethered)
       {
-        if(this->disturb_mode == DisturbationMode::STRONG_SIDE)
-          {
-            publishTetherForceDisturbations();
-          }
-        else if(this->disturb_mode == DisturbationMode::CIRCULAR)
-          {
-            publishTetherForceDisturbations();
-          }
-        else if(this->disturb_mode == DisturbationMode::TET_GRAV_FIL_ANG)
-          {
-            publishTetherForceDisturbations();
-          }
-        else if(this->disturb_mode == DisturbationMode::NONE)
-          {
-            RCLCPP_WARN(this->get_logger(), "Unknown disturbation mode, defaulted to NONE");
-          }
+        publishTetherForceDisturbations();
       }
   }
 
