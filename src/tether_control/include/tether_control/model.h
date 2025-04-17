@@ -7,13 +7,13 @@ class tether_model
 {
 public:
   tether_model();
-  void computeTetherForce(float *tether_force_vec);
+  void computeTetherVecForce(double *tether_force_vec, double *delta_theta);
 
   // Setters
   void setOdometry(const Eigen::Vector3d &position_W, const Eigen::Quaterniond &orientation_B_W,
                    const Eigen::Vector3d &velocity_B, const Eigen::Vector3d &angular_velocity_B)
   {
-    R_B_W_ = orientation_B_W.toRotationMatrix();
+    R_B_W_ = orientation_B_W.toRotationMatrix(); // rotation matrix from body to world frame
     position_W_ = position_W;
     velocity_W_ = R_B_W_ * velocity_B;
     angular_velocity_B_ = angular_velocity_B;
@@ -27,6 +27,11 @@ public:
   void setTetherCurLength(double cur_length) { cur_length_ = cur_length; }
   void setTetherDroneDistance(double drone_gs_dist) { drone_gs_dist_ = drone_gs_dist; }
   void setWinchReactionForce(double winch_force) { winch_force_ = winch_force; }
+  void setWorldSpherAngles(double theta, double phi)
+  {
+    polar_theta = theta;
+    azim_phi_ = phi;
+  }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 private:
@@ -37,9 +42,11 @@ private:
   double init_length_;
 
   // Current states of tether cable
-  double cur_length_;
+  double cur_length_ = 1.0;
   double drone_gs_dist_;
   double winch_force_ = 1.0;
+  double polar_theta = 0.0; // [rad] spher angle between xy plane and z-axis
+  double azim_phi_ = 0.0;   // [rad] spher angle between x & y axes
 
   // Current states of drone
   Eigen::Vector3d position_W_;

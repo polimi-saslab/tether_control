@@ -33,9 +33,10 @@ namespace tether_control
     float y = msg.x;
     float z = -msg.z;
     this->dist_gs_drone = std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2));
-    tether_model_.setTetherDroneDistance(this->dist_gs_drone);
     this->tether_ground_cur_angle_theta = std::atan2(std::sqrt(std::pow(x, 2) + std::pow(y, 2)), z);
     this->tether_ground_cur_angle_phi = std::atan2(y, x);
+    tether_model_.setTetherDroneDistance(this->dist_gs_drone);
+    tether_model_.setWorldSpherAngles(this->tether_ground_cur_angle_theta, this->tether_ground_cur_angle_phi);
 
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), LOG_THROT_FREQ, "Drone position: [%f, %f, %f]", msg.x,
                          msg.y, msg.z);

@@ -6,7 +6,7 @@ yannis_tether_control_node: # $USER + tether_control_node, @todo: change
     uav_type: "tarot" # possibilities: MC, VTOL, VTOL-TAILSITTER
     gravity: 9.81 # [m/s²]
     control:
-      control_mode: "CUSTOM" #TETHER_FORCE_REACTIONS, ATTITUDE, THRUST_IDENTIF
+      control_mode: "TETHER_FORCE_REACTIONS" #TETHER_FORCE_REACTIONS, ATTITUDE, THRUST_IDENTIF
       hoverThrust: 0.3733 # empirically determined, thrust to hover in sim 0.3733 with tethered=false
       thrust_force_constant: 43.0452183 # empirically: k = F/thrust = 1.638*9.81/0.3733 = 43.0452183
       attThrustKp: 0.5 # empirically determined, Kp for attitude control
