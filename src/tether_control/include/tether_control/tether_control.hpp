@@ -188,8 +188,6 @@ namespace tether_control
     rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr vehicle_command_publisher_;
     rclcpp::Publisher<px4_msgs::msg::ActuatorMotors>::SharedPtr actuators_motors_pub;
     rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_pub_;
-    // pub for visualisation / debugging purposes
-    rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr tether_force_viz_pub_;
     // pub for analysing data
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr tether_model_metrics_pub_;
     rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr drone_rpy_pub_;

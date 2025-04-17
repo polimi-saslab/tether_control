@@ -60,7 +60,6 @@ namespace tether_control
     actuators_motors_pub = this->create_publisher<ActuatorMotors>("/fmu/in/actuator_motors", 10);
     attitude_pub_ = this->create_publisher<VehicleAttitudeSetpoint>("/fmu/in/vehicle_attitude_setpoint", 10);
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
-    tether_force_viz_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force_viz", 10);
     tether_force_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("/drone/tether_force", 10);
     tether_model_metrics_pub_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("/metrics/model", 10);
     drone_rpy_pub_ = this->create_publisher<geometry_msgs::msg::Vector3>("/drone/rpy", 10);

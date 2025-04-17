@@ -9,7 +9,7 @@ namespace tether_control
     geometry_msgs::msg::WrenchStamped msg;
 
     msg.header.stamp = this->now();
-    msg.header.frame_id = "base_link";
+    msg.header.frame_id = "map";
 
     if(this->disturb_mode == DisturbationMode::CIRCULAR)
       {
@@ -48,7 +48,7 @@ namespace tether_control
                              * std::cos(this->tether_ground_cur_angle_phi);
         msg.wrench.force.y = -(resulting_force)*std::sin(delta_theta + this->tether_ground_cur_angle_theta)
                              * std::sin(this->tether_ground_cur_angle_phi);
-        msg.wrench.force.z = -(resulting_force)*std::cos(
+        msg.wrench.force.z = -(esulting_force)*std::cos(
           delta_theta + this->tether_ground_cur_angle_theta); // should be pi - theta, then z=-z but same
       }
     else
@@ -73,15 +73,6 @@ namespace tether_control
 
     this->tether_force_vec = {msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z};
     this->tether_force_pub_->publish(msg);
-    if(this->debug_mode)
-      {
-        // inversion so that rviz makes sense
-        geometry_msgs::msg::WrenchStamped msg_viz = msg;
-        msg_viz.wrench.force.x = -msg.wrench.force.x;
-        msg_viz.wrench.force.y = -msg.wrench.force.y;
-        msg_viz.wrench.force.z = -msg.wrench.force.z;
-        this->tether_force_viz_pub_->publish(msg_viz);
-      }
   }
 
   void TetherControl::setHoverThrust()
